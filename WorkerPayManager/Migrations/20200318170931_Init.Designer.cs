@@ -9,7 +9,7 @@ using WorkerPayManager.Data;
 namespace WorkerPayManager.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20200318102514_Init")]
+    [Migration("20200318170931_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -79,6 +79,10 @@ namespace WorkerPayManager.Migrations
                         .IsConcurrencyToken()
                         .HasColumnType("TEXT");
 
+                    b.Property<string>("Discriminator")
+                        .IsRequired()
+                        .HasColumnType("TEXT");
+
                     b.Property<string>("Email")
                         .HasColumnType("TEXT")
                         .HasMaxLength(256);
@@ -129,6 +133,8 @@ namespace WorkerPayManager.Migrations
                         .HasName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+
+                    b.HasDiscriminator<string>("Discriminator").HasValue("IdentityUser");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
@@ -214,6 +220,38 @@ namespace WorkerPayManager.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("WorkerPayManager.Models.Companies.Company", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER");
+
+                    b.Property<string>("AccountId")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Customer")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Name")
+                        .HasColumnType("TEXT");
+
+                    b.Property<string>("Password")
+                        .HasColumnType("TEXT");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("Companies");
+                });
+
+            modelBuilder.Entity("WorkerPayManager.Models.Accounts.Account", b =>
+                {
+                    b.HasBaseType("Microsoft.AspNetCore.Identity.IdentityUser");
+
+                    b.HasDiscriminator().HasValue("Account");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -263,6 +301,13 @@ namespace WorkerPayManager.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("WorkerPayManager.Models.Companies.Company", b =>
+                {
+                    b.HasOne("WorkerPayManager.Models.Accounts.Account", "Account")
+                        .WithMany()
+                        .HasForeignKey("AccountId");
                 });
 #pragma warning restore 612, 618
         }

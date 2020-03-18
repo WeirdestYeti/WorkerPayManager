@@ -4,6 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WorkerPayManager.Models.Accounts;
+using WorkerPayManager.Models.Companies;
 
 namespace WorkerPayManager.Data
 {
@@ -13,6 +15,9 @@ namespace WorkerPayManager.Data
         {
 
         }
+
+        DbSet<Account> Accounts { get; set; }
+        DbSet<Company> Companies { get; set; }
 
     }
 }

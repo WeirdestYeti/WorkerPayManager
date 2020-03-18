@@ -15,6 +15,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using WorkerPayManager.Data;
+using WorkerPayManager.Models.Accounts;
 
 namespace WorkerPayManager
 {
@@ -32,9 +33,9 @@ namespace WorkerPayManager
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<AppDbContext>(options =>
-                options.UseSqlite("DataSource=app.db"));
+                options.UseSqlite("Filename=app.db"));
 
-            services.AddDefaultIdentity<IdentityUser>()
+            services.AddDefaultIdentity<Account>()
                 .AddEntityFrameworkStores<AppDbContext>();
             services.AddRazorPages();
             services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
@@ -54,6 +55,12 @@ namespace WorkerPayManager
                 app.UseExceptionHandler("/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
+            }
+
+            using (var serviceScope = app.ApplicationServices.GetService<IServiceScopeFactory>().CreateScope())
+            {
+                var context = serviceScope.ServiceProvider.GetRequiredService<AppDbContext>();
+                context.Database.Migrate();
             }
 
             app.UseHttpsRedirection();

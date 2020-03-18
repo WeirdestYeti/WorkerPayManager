@@ -3,6 +3,10 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Migrations\20200318102514_Init.cs" />
+    <Compile Remove="Migrations\20200318102514_Init.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="ElectronNET.API" Version="7.30.2" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="3.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="3.0.0" />
