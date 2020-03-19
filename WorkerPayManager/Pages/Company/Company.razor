@@ -10,26 +10,29 @@
 </a>
 
 <div class="container">
-    <div class="row row-cols-3">
-        @foreach (var item in Companies)
-        {
-            <div class="col-4 pb-3">
-                <div class="card " style="width: 18rem;">
-                    <div class="card-body">
-                        <h5 class="card-title">@item.Name</h5>
-                    </div>
-                    <ul class="list-group list-group-flush">
-                        <li class="list-group-item">@item.Customer</li>
-                        <li class="list-group-item"> <input type="text" id="password" class="form-control"/></li>
-                    </ul>
-                    <div class="card-body">
-                        <a href="#" class="card-link">Choose</a>
-                        <a href="#" class="card-link">Manage</a>
+    <div class="container-fluid">
+        <div class="row">
+            @foreach (var item in Companies)
+            {
+                <div class="col pb-5">
+                    <div class="card bg-light" style="width: 18rem;">
+                        <div class="card-header">
+                            Company: @item.Name
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item bg-light">Customer: @item.Customer</li>
+                            <li class="list-group-item bg-light"> <input type="password" id="password" placeholder="Password" class="form-control" /></li>
+                        </ul>
+                        <div class="card-body text-center">
+
+                            <a href="#" class="btn btn-primary btn-sm" role="button" aria-pressed="true">Select</a>
+                            <a href="#" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Manage</a>
+                        </div>
                     </div>
                 </div>
+            }
             </div>
-        }
-    </div>
+        </div>
 </div>
 
 
