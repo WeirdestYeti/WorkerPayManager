@@ -1,0 +1,51 @@
+﻿@using WorkerPayManager.Models.Companies
+@using WorkerPayManager.Data
+@inject CompanyService companyService
+<h1>Companies</h1>
+
+<AddCompany DataChanged="GetCompanies" />
+
+<a class="nav-link" href="" data-toggle="modal" data-target="#addCompanyModal">
+    <span class="oi oi-plus" aria-hidden="true"></span> Add Company
+</a>
+
+<div class="container">
+    <div class="row row-cols-3">
+        @foreach (var item in Companies)
+        {
+            <div class="col-4 pb-3">
+                <div class="card " style="width: 18rem;">
+                    <div class="card-body">
+                        <h5 class="card-title">@item.Name</h5>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">@item.Customer</li>
+                        <li class="list-group-item"> <input type="text" id="password" class="form-control"/></li>
+                    </ul>
+                    <div class="card-body">
+                        <a href="#" class="card-link">Choose</a>
+                        <a href="#" class="card-link">Manage</a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+
+@code{
+
+    private List<WorkerPayManager.Models.Companies.Company> Companies;
+
+    protected override async Task OnInitializedAsync()
+    {
+        Companies = await companyService.GetCompaniesAsync();
+    }
+
+    private async void GetCompanies()
+    {
+        Companies = await companyService.GetCompaniesAsync();
+        StateHasChanged();
+    }
+
+}

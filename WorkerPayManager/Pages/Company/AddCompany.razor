@@ -1,0 +1,65 @@
+﻿@using WorkerPayManager.Models.Companies
+@using WorkerPayManager.Data
+@inject CompanyService companyService
+@inject IJSRuntime jsRuntime
+
+
+<div class="modal fade" tabindex="-1" role="dialog" id="addCompanyModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Task Detail</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@_addCompanyModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <InputText id="name" class="form-control" @bind-Value="_addCompanyModel.Name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="customer">Customer</label>
+                        <InputText id="customer" class="form-control" @bind-Value="_addCompanyModel.Customer"></InputText>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <InputText id="password" class="form-control" @bind-Value="_addCompanyModel.Password"></InputText>
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+    private AddCompanyModel _addCompanyModel = new AddCompanyModel();
+
+    [Parameter]
+    public Action DataChanged { get; set; }
+
+    private async Task CloseTaskModal()
+    {
+        await jsRuntime.InvokeAsync<object>("CloseModal", "addCompanyModal");
+    }
+
+    private async Task HandleValidSubmit()
+    {
+        bool result = await companyService.CreateCompanyAsync(_addCompanyModel.Name, _addCompanyModel.Customer, _addCompanyModel.Password);
+        _addCompanyModel = new AddCompanyModel();
+        await CloseTaskModal();
+
+
+
+        DataChanged?.Invoke();
+    }
+} 

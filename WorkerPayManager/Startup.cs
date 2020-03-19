@@ -41,6 +41,7 @@ namespace WorkerPayManager
             services.AddScoped<AuthenticationStateProvider, ServerAuthenticationStateProvider>();
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
+            services.AddTransient<CompanyService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
