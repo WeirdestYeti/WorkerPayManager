@@ -49,6 +49,31 @@ namespace WorkerPayManager.Data
             return false;
         }
 
+        public async Task<(bool, string)> EditCompanyAsync(Company company)
+        {
+            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            var user = authState.User;
+
+
+            if (_signInManager.IsSignedIn(user))
+            {
+
+                Company companyToUpdate = await _context.Companies.SingleOrDefaultAsync(x => x.Id == company.Id);
+                if (company.Id == companyToUpdate.Id)
+                {
+                    companyToUpdate = company;
+
+                    _context.Companies.Update(companyToUpdate);
+                    await _context.SaveChangesAsync();
+                    return (true, "Updated");
+                }
+                else return (false, "Id's don't match");
+
+             
+            }
+            else return (false, "Not Authorized");
+        }
+
         public async Task<List<Company>> GetCompaniesAsync()
         {
             return await _context.Companies.ToListAsync();

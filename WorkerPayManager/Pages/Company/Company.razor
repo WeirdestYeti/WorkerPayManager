@@ -5,6 +5,8 @@
 
 <AddCompany DataChanged="GetCompanies" />
 
+<EditCompany DataChanged="GetCompanies" EditCompanyObject="editCompanyObject"  />
+
 <a class="nav-link" href="" data-toggle="modal" data-target="#addCompanyModal">
     <span class="oi oi-plus" aria-hidden="true"></span> Add Company
 </a>
@@ -14,8 +16,8 @@
         <div class="row">
             @foreach (var item in Companies)
             {
-                <div class="col pb-5">
-                    <div class="card bg-light" style="width: 18rem;">
+                <div class="col-lg-4 pb-5">
+                    <div class="card bg-light" >
                         <div class="card-header">
                             Company: @item.Name
                         </div>
@@ -26,19 +28,21 @@
                         <div class="card-body text-center">
 
                             <a href="#" class="btn btn-primary btn-sm" role="button" aria-pressed="true">Select</a>
-                            <a href="#" class="btn btn-secondary btn-sm" role="button" aria-pressed="true">Manage</a>
+                            <a href="" class="btn btn-secondary btn-sm" role="button" aria-pressed="true" data-toggle="modal" data-target="#editCompanyModal" @onclick="(() => PrepareForEdit(item))">Edit</a>
                         </div>
                     </div>
                 </div>
             }
-            </div>
         </div>
+    </div>
 </div>
 
 
 @code{
 
     private List<WorkerPayManager.Models.Companies.Company> Companies;
+
+    WorkerPayManager.Models.Companies.Company editCompanyObject = new Models.Companies.Company();
 
     protected override async Task OnInitializedAsync()
     {
@@ -49,6 +53,12 @@
     {
         Companies = await companyService.GetCompaniesAsync();
         StateHasChanged();
+    }
+
+
+    private void PrepareForEdit(WorkerPayManager.Models.Companies.Company company)
+    {
+        editCompanyObject = company;
     }
 
 }

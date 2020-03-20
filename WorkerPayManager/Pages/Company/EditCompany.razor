@@ -1,0 +1,106 @@
+﻿@using WorkerPayManager.Models.Companies
+@using WorkerPayManager.Data
+@inject CompanyService companyService
+@inject IJSRuntime jsRuntime
+
+<div class="modal fade" tabindex="-1" role="dialog" id="editCompanyModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit a company</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@EditCompanyModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    @if (ResultMessage != null)
+                    {
+                        <ul class="validation-errors">
+                            <li class="validation-message">@ResultMessage</li>
+                        </ul>
+                    }
+
+
+                    <div class="form-group">
+                        <label for="name">Name</label>
+                        <InputText id="name" class="form-control" @bind-Value="EditCompanyModel.Name" />
+                    </div>
+                    <div class="form-group">
+                        <label for="customer">Customer</label>
+                        <InputText id="customer" class="form-control" @bind-Value="EditCompanyModel.Customer"></InputText>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Old Password</label>
+                        <InputText id="oldPassword" class="form-control" @bind-Value="EditCompanyModel.OldPassword"></InputText>
+                    </div>
+                    <div class="form-group">
+                        <label for="password"> New Password</label>
+                        <InputText id="password" class="form-control" @bind-Value="EditCompanyModel.Password"></InputText>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <InputText id="password" class="form-control" @bind-Value="EditCompanyModel.ConfirmPassword"></InputText>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    public string ResultMessage { get; set; }
+
+    [Parameter]
+    public Action DataChanged { get; set; }
+
+    public EditCompanyModel EditCompanyModel { get; set; } = new EditCompanyModel();
+
+    [Parameter]
+    public WorkerPayManager.Models.Companies.Company EditCompanyObject {get;set;}
+
+    protected override void OnInitialized()
+    {
+    }
+
+    protected override void OnParametersSet()
+    {
+        EditCompanyModel = new EditCompanyModel();
+        EditCompanyModel.Name = EditCompanyObject.Name;
+        EditCompanyModel.Customer = EditCompanyObject.Customer;
+    }
+
+    private async Task CloseTaskModal()
+    {
+        await jsRuntime.InvokeAsync<object>("CloseModal", "editCompanyModal");
+    }
+
+    private async void HandleValidSubmit()
+    {
+        EditCompanyObject.Customer = EditCompanyModel.Customer;
+        EditCompanyObject.Name = EditCompanyModel.Name;
+        EditCompanyObject.Password = EditCompanyModel.Password;
+
+        (bool, string) result = await companyService.EditCompanyAsync(EditCompanyObject);
+
+        if (!result.Item1)
+        {
+            ResultMessage = result.Item2;
+
+            return;
+        }
+        else
+        {
+            await CloseTaskModal();
+            DataChanged?.Invoke();
+        }
+
+    }
+}
