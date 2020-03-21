@@ -49,7 +49,7 @@ namespace WorkerPayManager.Data
             return false;
         }
 
-        public async Task<(bool, string)> EditCompanyAsync(Company company)
+        public async Task<(bool, string)> EditCompanyAsync(EditCompanyModel company)
         {
             var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
             var user = authState.User;
@@ -61,11 +61,17 @@ namespace WorkerPayManager.Data
                 Company companyToUpdate = await _context.Companies.SingleOrDefaultAsync(x => x.Id == company.Id);
                 if (company.Id == companyToUpdate.Id)
                 {
-                    companyToUpdate = company;
+                    if (companyToUpdate.Password.Equals(company.OldPassword))
+                    {
+                        companyToUpdate.Customer = company.Customer;
+                        companyToUpdate.Name = company.Name;
+                        companyToUpdate.Password = company.Password;
 
-                    _context.Companies.Update(companyToUpdate);
-                    await _context.SaveChangesAsync();
-                    return (true, "Updated");
+                        _context.Companies.Update(companyToUpdate);
+                        await _context.SaveChangesAsync();
+                        return (true, "Updated");
+                    }
+                    else return (false, "Old Password doesn't match.");
                 }
                 else return (false, "Id's don't match");
 

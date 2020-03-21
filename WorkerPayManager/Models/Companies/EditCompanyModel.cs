@@ -8,6 +8,7 @@ namespace WorkerPayManager.Models.Companies
 {
     public class EditCompanyModel
     {
+        public int Id { get; set; }
         [Required]
         [StringLength(20, MinimumLength = 2, ErrorMessage = "Company name is too long.")]
         public string Name { get; set; }
