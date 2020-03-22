@@ -46,12 +46,12 @@
 
     protected override async Task OnInitializedAsync()
     {
-        Companies = await companyService.GetCompaniesAsync();
+        Companies = await companyService.GetCompaniesForAccountAsync();
     }
 
     private async void GetCompanies()
     {
-        Companies = await companyService.GetCompaniesAsync();
+        Companies = await companyService.GetCompaniesForAccountAsync();
         StateHasChanged();
     }
 

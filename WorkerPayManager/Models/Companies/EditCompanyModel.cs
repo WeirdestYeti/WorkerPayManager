@@ -10,10 +10,10 @@ namespace WorkerPayManager.Models.Companies
     {
         public int Id { get; set; }
         [Required]
-        [StringLength(20, MinimumLength = 2, ErrorMessage = "Company name is too long.")]
+        [StringLength(20, MinimumLength = 2, ErrorMessage = "Company needs to be 2 characters minimum.")]
         public string Name { get; set; }
         [Required]
-        [StringLength(20, MinimumLength = 4, ErrorMessage = "Customer is too long.")]
+        [StringLength(20, MinimumLength = 4, ErrorMessage = "Customer needs to be 4 characters minimum.")]
         public string Customer { get; set; }
         [Required]
         [Display(Name = "Old Password")]

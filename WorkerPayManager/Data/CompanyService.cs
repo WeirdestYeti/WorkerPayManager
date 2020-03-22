@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using WorkerPayManager.Models.Accounts;
 using WorkerPayManager.Models.Companies;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace WorkerPayManager.Data
 {
@@ -26,11 +27,9 @@ namespace WorkerPayManager.Data
         }
         public async Task<bool> CreateCompanyAsync(string name, string customer, string password)
         {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
+            var user = await GetAuthenticationClaimPrincipalAsync();
 
-            
-            if(_signInManager.IsSignedIn(user))
+            if (_signInManager.IsSignedIn(user))
             {
                 
 
@@ -51,9 +50,7 @@ namespace WorkerPayManager.Data
 
         public async Task<(bool, string)> EditCompanyAsync(EditCompanyModel company)
         {
-            var authState = await _authenticationStateProvider.GetAuthenticationStateAsync();
-            var user = authState.User;
-
+            var user = await GetAuthenticationClaimPrincipalAsync();
 
             if (_signInManager.IsSignedIn(user))
             {
@@ -80,9 +77,28 @@ namespace WorkerPayManager.Data
             else return (false, "Not Authorized");
         }
 
+        public async Task<List<Company>> GetCompaniesForAccountAsync()
+        {
+            var user = await GetAuthenticationClaimPrincipalAsync();
+            if (_signInManager.IsSignedIn(user))
+            {
+                Account account = await _userManager.FindByNameAsync(user.Identity.Name);
+                List<Company> companies = await _context.Companies.Where(x => x.Account.Id == account.Id).ToListAsync();
+
+                return companies;
+            }
+            else return new List<Company>();
+        }
+
         public async Task<List<Company>> GetCompaniesAsync()
         {
             return await _context.Companies.ToListAsync();
+        }
+
+        private async Task<ClaimsPrincipal> GetAuthenticationClaimPrincipalAsync()
+        {
+            var authstate = await _authenticationStateProvider.GetAuthenticationStateAsync();
+            return authstate.User;      
         }
     }
 }
