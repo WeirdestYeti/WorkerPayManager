@@ -1,11 +1,17 @@
 ﻿@using WorkerPayManager.Models.Companies
 @using WorkerPayManager.Data
 @inject CompanyService companyService
+@inject GlobalVariable globalVariable
 <h1>Companies</h1>
+
+
+Selected @globalVariable.SelectedCompanyId
 
 <AddCompany DataChanged="GetCompanies" />
 
 <EditCompany DataChanged="GetCompanies" EditCompanyObject="editCompanyObject"  />
+
+<SelectCompany DataChanged="StateChangeInvoke" CompanyObject="selectCompanyObject" />
 
 <a class="nav-link" href="" data-toggle="modal" data-target="#addCompanyModal">
     <span class="oi oi-plus" aria-hidden="true"></span> Add Company
@@ -23,11 +29,10 @@
                         </div>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item bg-light">Customer: @item.Customer</li>
-                            <li class="list-group-item bg-light"> <input type="password" id="password" placeholder="Password" class="form-control" /></li>
                         </ul>
                         <div class="card-body text-center">
 
-                            <a href="#" class="btn btn-primary btn-sm" role="button" aria-pressed="true">Select</a>
+                            <a href="#" class="btn btn-primary btn-sm" role="button" aria-pressed="true" data-toggle="modal" data-target="#selectCompanyModal" @onclick="(() => PrepareForSelect(item))">Select</a>
                             <a href="" class="btn btn-secondary btn-sm" role="button" aria-pressed="true" data-toggle="modal" data-target="#editCompanyModal" @onclick="(() => PrepareForEdit(item))">Edit</a>
                         </div>
                     </div>
@@ -44,6 +49,8 @@
 
     WorkerPayManager.Models.Companies.Company editCompanyObject = new Models.Companies.Company();
 
+    WorkerPayManager.Models.Companies.Company selectCompanyObject = new Models.Companies.Company();
+
     protected override async Task OnInitializedAsync()
     {
         Companies = await companyService.GetCompaniesForAccountAsync();
@@ -55,10 +62,23 @@
         StateHasChanged();
     }
 
+    private void StateChangeInvoke()
+    {
+        StateHasChanged();
+    }
 
     private void PrepareForEdit(WorkerPayManager.Models.Companies.Company company)
     {
         editCompanyObject = company;
     }
 
+    private void SelectCompany(int id)
+    {
+        globalVariable.SelectedCompanyId = id;
+    }
+
+    private void PrepareForSelect(WorkerPayManager.Models.Companies.Company company)
+    {
+        selectCompanyObject = company;
+    }
 }

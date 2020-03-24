@@ -1,0 +1,100 @@
+﻿@using System.ComponentModel.DataAnnotations;
+@using WorkerPayManager.Data;
+
+@inject CompanyService companyService
+@inject GlobalVariable globalVariable
+@inject IJSRuntime jsRuntime
+
+<div class="modal fade" tabindex="-1" role="dialog" id="selectCompanyModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Select a company</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="@selectCompanyModel" OnValidSubmit="HandleValidSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    @if (ResultMessage != null)
+                    {
+                        <ul class="validation-errors">
+                            <li class="validation-message">@ResultMessage</li>
+                        </ul>
+                    }
+
+                    <div class="form-group">
+                        <label for="name">Name:</label>
+                        @CompanyObject.Name
+                    </div>
+                    <div class="form-group">
+                        <label for="name">Customer:</label>
+                        @CompanyObject.Customer
+                    </div>
+
+                    <div class="form-group">
+                        <InputText id="password" class="form-control" placeholder="Password" @bind-Value="selectCompanyModel.Password" />
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+@code {
+    [Parameter]
+    public Action DataChanged { get; set; }
+
+    public string ResultMessage { get; set; }
+
+    public SelectCompanyModel selectCompanyModel { get; set; }
+
+    [Parameter]
+    public WorkerPayManager.Models.Companies.Company CompanyObject { get; set; }
+
+    public class SelectCompanyModel
+    {
+        [Required]
+        [DataType(DataType.Password)]
+        [StringLength(20, MinimumLength = 7, ErrorMessage = "Password needs to 7-16 characters.")]
+        public string Password { get; set; }
+    }
+
+
+
+    protected override void OnParametersSet()
+    {
+        ResultMessage = null;
+        selectCompanyModel = new SelectCompanyModel();
+
+    }
+
+    private async Task CloseTaskModal()
+    {
+        await jsRuntime.InvokeAsync<object>("CloseModal", "selectCompanyModal");
+    }
+
+    private async void HandleValidSubmit()
+    {
+        (bool, string) result = await companyService.SelectCompanyAsync(CompanyObject.Id, selectCompanyModel.Password);
+
+        if (!result.Item1)
+        {
+            ResultMessage = result.Item2;
+
+            return;
+        }
+        else
+        {
+            await CloseTaskModal();
+            DataChanged?.Invoke();
+        }
+    }
+}

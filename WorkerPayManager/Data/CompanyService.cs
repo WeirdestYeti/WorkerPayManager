@@ -17,13 +17,16 @@ namespace WorkerPayManager.Data
         private readonly UserManager<Account> _userManager;
         private readonly SignInManager<Account> _signInManager;
         private readonly AuthenticationStateProvider _authenticationStateProvider;
+        private readonly GlobalVariable _globalVariable;
 
-        public CompanyService(AppDbContext context, UserManager<Account> userManager, SignInManager<Account> signInManager, AuthenticationStateProvider authenticationStateProvider)
+
+        public CompanyService(AppDbContext context, UserManager<Account> userManager, SignInManager<Account> signInManager, AuthenticationStateProvider authenticationStateProvider, GlobalVariable globalVariable)
         {
             _context = context;
             _userManager = userManager;
             _signInManager = signInManager;
             _authenticationStateProvider = authenticationStateProvider;
+            _globalVariable = globalVariable;
         }
         public async Task<bool> CreateCompanyAsync(string name, string customer, string password)
         {
@@ -31,9 +34,6 @@ namespace WorkerPayManager.Data
 
             if (_signInManager.IsSignedIn(user))
             {
-                
-
-
                 Company company = new Company();
                 company.Name = name;
                 company.Account = await _userManager.FindByNameAsync(user.Identity.Name);
@@ -95,10 +95,37 @@ namespace WorkerPayManager.Data
             return await _context.Companies.ToListAsync();
         }
 
+        public async Task<(bool, string)> SelectCompanyAsync(int id, string password)
+        {
+            var user = await GetAuthenticationClaimPrincipalAsync();
+            if (_signInManager.IsSignedIn(user))
+            {
+                Company company = await _context.Companies.SingleOrDefaultAsync(x => x.Id == id);
+                if (company != null)
+                {
+                    if (company.Account.UserName.Equals(user.Identity.Name))
+                    {
+                        if (company.Password.Equals(password))
+                        {
+                            _globalVariable.SelectedCompanyId = company.Id;
+                            return (true, "Login successful.");
+                        }
+                        else return (false, "Wrong Password.");
+                    }
+                    else return (false, "This account doesn't have accces to this company.");
+
+                }
+                else return (false, "Company not found.");
+            }
+            else return (false, "Not Authorized");
+        }
+
         private async Task<ClaimsPrincipal> GetAuthenticationClaimPrincipalAsync()
         {
             var authstate = await _authenticationStateProvider.GetAuthenticationStateAsync();
             return authstate.User;      
         }
+
+
     }
 }
