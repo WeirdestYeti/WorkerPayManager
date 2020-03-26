@@ -88,6 +88,7 @@ namespace WorkerPayManager.Data
 
                         _context.Companies.Update(companyToUpdate);
                         await _context.SaveChangesAsync();
+                        _globalVariable.SetCompany(companyToUpdate.Id, companyToUpdate.Name);
                         return (true, "Updated");
                     }
                     else return (false, "Wrong Password.");
