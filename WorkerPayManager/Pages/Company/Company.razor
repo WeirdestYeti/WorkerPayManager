@@ -4,9 +4,6 @@
 @inject GlobalVariable globalVariable
 <h1>Companies</h1>
 
-
-Selected @globalVariable.SelectedCompanyId
-
 <AddCompany DataChanged="GetCompanies" />
 
 <EditCompany DataChanged="GetCompanies" EditCompanyObject="editCompanyObject"  />
@@ -62,19 +59,16 @@ Selected @globalVariable.SelectedCompanyId
         StateHasChanged();
     }
 
-    private void StateChangeInvoke()
+    private async void StateChangeInvoke()
     {
         StateHasChanged();
+
+        await globalVariable.Update();
     }
 
     private void PrepareForEdit(WorkerPayManager.Models.Companies.Company company)
     {
         editCompanyObject = company;
-    }
-
-    private void SelectCompany(int id)
-    {
-        globalVariable.SelectedCompanyId = id;
     }
 
     private void PrepareForSelect(WorkerPayManager.Models.Companies.Company company)

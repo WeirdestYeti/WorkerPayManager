@@ -1,0 +1,51 @@
+﻿@using WorkerPayManager.Data
+
+@inject WorkerPayManager.Data.GlobalVariable globalVariable
+@inject WorkerPayManager.Data.CompanyService companyService
+
+
+<EditCompany DataChanged="StateChangeInvoke" EditCompanyObject="editCompanyObject" />
+
+
+<div class="card">
+    <h5 class="card-header">Selected Company</h5>
+    <div class="card-body">
+        <h6 class="card-title">Name: @SelectedCompanyObject.Name</h6>
+        <h6 class="card-title">Customer: @SelectedCompanyObject.Customer</h6>
+        <a href="#" role="button" aria-pressed="true" data-toggle="modal" data-target="#editCompanyModal" @onclick="PrepareForEdit" class="btn btn-primary">Edit</a>
+        <a href="#" class="btn btn-danger" @onclick="LogOutCompany">Log Out</a>
+    </div>
+</div>
+
+
+@code {
+
+    public WorkerPayManager.Models.Companies.Company SelectedCompanyObject { get; set; }
+
+    public WorkerPayManager.Models.Companies.Company editCompanyObject { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        SelectedCompanyObject = await companyService.GetSelectedCompanyAsync();
+        editCompanyObject = SelectedCompanyObject;
+    }
+
+    private void PrepareForEdit()
+    {
+        editCompanyObject = SelectedCompanyObject;
+    }
+
+    private async void StateChangeInvoke()
+    {
+        StateHasChanged();
+
+        await globalVariable.Update();
+    }
+
+    public async void LogOutCompany()
+    {
+        await companyService.LogOutCompanyAsync();
+        await globalVariable.Update();
+    }
+
+}

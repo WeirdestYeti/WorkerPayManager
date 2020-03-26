@@ -1,6 +1,45 @@
 ﻿@page "/"
+
+@using WorkerPayManager.Data
+
+@inject WorkerPayManager.Data.GlobalVariable globalVariable
+
+
 @attribute [Authorize]
 
-<WorkerPayManager.Pages.Company.Company />
+
+@if (!globalVariable.IsCompanySelected)
+{
+    <WorkerPayManager.Pages.Company.Company />
+}
+else
+{
+    <WorkerPayManager.Pages.Company.SelectedCompany />
+}
+
+
+
+@code {
+
+
+    protected override void OnInitialized()
+    {
+        globalVariable.OnChange += OnNotify;
+    }
+
+    public async Task OnNotify()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        globalVariable.OnChange -= OnNotify;
+    }
+
+}
 
 

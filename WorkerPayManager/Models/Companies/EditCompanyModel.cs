@@ -16,19 +16,10 @@ namespace WorkerPayManager.Models.Companies
         [StringLength(20, MinimumLength = 4, ErrorMessage = "Customer needs to be 4 characters minimum.")]
         public string Customer { get; set; }
         [Required]
-        [Display(Name = "Old Password")]
-        [DataType(DataType.Password)]
-        [StringLength(20, MinimumLength = 7, ErrorMessage = "Password needs to 7-16 characters.")]
-        public string OldPassword { get; set; }
-        [Required]
-        [DataType(DataType.Password)]
-        [StringLength(20, MinimumLength = 7, ErrorMessage = "Password needs to 7-16 characters.")]
-        public string Password { get; set; }
-        [Required]
         [Display(Name = "Confirm Password")]
-        [Compare("Password")]
         [DataType(DataType.Password)]
-        [StringLength(20, MinimumLength = 7, ErrorMessage = "Confirm Password needs to 7-16 characters.")]
-        public string ConfirmPassword { get; set; }
+        [StringLength(20, MinimumLength = 7, ErrorMessage = "Password needs to 7-16 characters.")]
+        public string ConfirPassword { get; set; }
+
     }
 }

@@ -48,31 +48,51 @@ namespace WorkerPayManager.Data
             return false;
         }
 
+        public async Task<(bool, string)> ChangePasswordAsync(ChangeCompanyPasswordModel changeCompanyPasswordModel)
+        {
+            var user = await GetAuthenticationClaimPrincipalAsync();
+            if (_signInManager.IsSignedIn(user))
+            {
+                Company companyToUpdate = await _context.Companies.SingleOrDefaultAsync(x => x.Id == changeCompanyPasswordModel.Id);
+
+                if (changeCompanyPasswordModel.Id == companyToUpdate.Id)
+                {
+                    if (companyToUpdate.Password.Equals(changeCompanyPasswordModel.OldPassword))
+                    {
+                        companyToUpdate.Password = changeCompanyPasswordModel.Password;
+
+                        _context.Companies.Update(companyToUpdate);
+                        await _context.SaveChangesAsync();
+                        return (true, "Updated");
+                    }
+                    else return (false, "Wrong Password.");
+                }
+                else return (false, "Id's don't match.");
+            }
+            else return (false, "Not Authorized");
+        }
+
         public async Task<(bool, string)> EditCompanyAsync(EditCompanyModel company)
         {
             var user = await GetAuthenticationClaimPrincipalAsync();
 
             if (_signInManager.IsSignedIn(user))
             {
-
                 Company companyToUpdate = await _context.Companies.SingleOrDefaultAsync(x => x.Id == company.Id);
                 if (company.Id == companyToUpdate.Id)
                 {
-                    if (companyToUpdate.Password.Equals(company.OldPassword))
+                    if (companyToUpdate.Password.Equals(company.ConfirPassword))
                     {
                         companyToUpdate.Customer = company.Customer;
                         companyToUpdate.Name = company.Name;
-                        companyToUpdate.Password = company.Password;
 
                         _context.Companies.Update(companyToUpdate);
                         await _context.SaveChangesAsync();
                         return (true, "Updated");
                     }
-                    else return (false, "Old Password doesn't match.");
+                    else return (false, "Wrong Password.");
                 }
-                else return (false, "Id's don't match");
-
-             
+                else return (false, "Id's don't match.");
             }
             else return (false, "Not Authorized");
         }
@@ -107,7 +127,7 @@ namespace WorkerPayManager.Data
                     {
                         if (company.Password.Equals(password))
                         {
-                            _globalVariable.SelectedCompanyId = company.Id;
+                            _globalVariable.SetCompany(company.Id, company.Name);
                             return (true, "Login successful.");
                         }
                         else return (false, "Wrong Password.");
@@ -118,6 +138,25 @@ namespace WorkerPayManager.Data
                 else return (false, "Company not found.");
             }
             else return (false, "Not Authorized");
+        }
+
+        public async Task<Company> GetSelectedCompanyAsync()
+        {
+            var user = await GetAuthenticationClaimPrincipalAsync();
+            if (_signInManager.IsSignedIn(user))
+            {
+                return await _context.Companies.SingleOrDefaultAsync(x => x.Id == _globalVariable.SelectedCompanyId);
+            }
+            else return null;
+        }
+
+        public async Task LogOutCompanyAsync()
+        {
+            var user = await GetAuthenticationClaimPrincipalAsync();
+            if (_signInManager.IsSignedIn(user))
+            {
+                _globalVariable.SetCompany(0, null);
+            }
         }
 
         private async Task<ClaimsPrincipal> GetAuthenticationClaimPrincipalAsync()

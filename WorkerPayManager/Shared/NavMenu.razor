@@ -1,4 +1,8 @@
-﻿<div class="top-row pl-4 navbar navbar-dark">
+﻿@using WorkerPayManager.Data
+
+@inject WorkerPayManager.Data.GlobalVariable globalVariable
+
+<div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">WorkerPayManager</a>
     <button class="navbar-toggler" @onclick="ToggleNavMenu">
         <span class="navbar-toggler-icon"></span>
@@ -9,7 +13,15 @@
     <ul class="nav flex-column">
         <li class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="oi oi-home" aria-hidden="true"></span> Home
+                <span class="oi oi-home" aria-hidden="true"></span>
+                @if (globalVariable.IsCompanySelected)
+                {
+                    @:Company: @globalVariable.SelectedCompanyName (@globalVariable.SelectedCompanyId)
+                }
+                else
+                {
+                    @:Copmany: Not Selected
+                }
             </NavLink>
         </li>
         <li class="nav-item px-3">
@@ -34,4 +46,23 @@
     {
         collapseNavMenu = !collapseNavMenu;
     }
+
+    protected override void OnInitialized()
+    {
+        globalVariable.OnChange += OnNotify;
+    }
+
+    public async Task OnNotify()
+    {
+        await InvokeAsync(() =>
+        {
+            StateHasChanged();
+        });
+    }
+
+    public void Dispose()
+    {
+        globalVariable.OnChange -= OnNotify;
+    }
+
 }

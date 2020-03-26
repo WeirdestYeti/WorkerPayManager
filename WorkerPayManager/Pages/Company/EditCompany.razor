@@ -13,13 +13,14 @@
                 </button>
             </div>
             <div class="modal-body">
-                <EditForm Model="@EditCompanyModel" OnValidSubmit="HandleValidSubmit">
+                <h3>Edit Data</h3>
+                <EditForm Model="@EditCompanyModel" OnValidSubmit="HandleValidEditSubmit">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
-                    @if (ResultMessage != null)
+                    @if (EditResultMessage != null)
                     {
                         <ul class="validation-errors">
-                            <li class="validation-message">@ResultMessage</li>
+                            <li class="validation-message">@EditResultMessage</li>
                         </ul>
                     }
 
@@ -33,16 +34,36 @@
                         <InputText id="customer" class="form-control" @bind-Value="EditCompanyModel.Customer"></InputText>
                     </div>
                     <div class="form-group">
+                        <label for="password">Confirm Password</label>
+                        <InputText id="oldPassword" class="form-control" @bind-Value="EditCompanyModel.ConfirPassword"></InputText>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </EditForm>
+                <br />
+                <h3>Change Password</h3>
+                <EditForm Model="@ChangeCompPasswordModel" OnValidSubmit="HandleValidChangePasswordSubmit">
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+                    @if (ChangePasswordResultMessage != null)
+                    {
+                        <ul class="validation-errors">
+                            <li class="validation-message">@ChangePasswordResultMessage</li>
+                        </ul>
+                    }
+
+                    <div class="form-group">
                         <label for="password">Old Password</label>
-                        <InputText id="oldPassword" class="form-control" @bind-Value="EditCompanyModel.OldPassword"></InputText>
+                        <InputText id="oldPassword" class="form-control" @bind-Value="ChangeCompPasswordModel.OldPassword"></InputText>
                     </div>
                     <div class="form-group">
                         <label for="password"> New Password</label>
-                        <InputText id="password" class="form-control" @bind-Value="EditCompanyModel.Password"></InputText>
+                        <InputText id="password" class="form-control" @bind-Value="ChangeCompPasswordModel.Password"></InputText>
                     </div>
                     <div class="form-group">
                         <label for="confirmPassword">Confirm New Password</label>
-                        <InputText id="password" class="form-control" @bind-Value="EditCompanyModel.ConfirmPassword"></InputText>
+                        <InputText id="password" class="form-control" @bind-Value="ChangeCompPasswordModel.ConfirmPassword"></InputText>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Submit</button>
@@ -56,12 +77,16 @@
 
 
 @code {
-    public string ResultMessage { get; set; }
+    public string EditResultMessage { get; set; }
+
+    public string ChangePasswordResultMessage { get; set; }
 
     [Parameter]
     public Action DataChanged { get; set; }
 
     public EditCompanyModel EditCompanyModel { get; set; }
+
+    public ChangeCompanyPasswordModel ChangeCompPasswordModel { get; set; }
 
     [Parameter]
     public WorkerPayManager.Models.Companies.Company EditCompanyObject {get;set;}
@@ -72,8 +97,10 @@
 
     protected override void OnParametersSet()
     {
-        ResultMessage = null;
+        EditResultMessage = null;
+        ChangePasswordResultMessage = null;
         EditCompanyModel = new EditCompanyModel();
+        ChangeCompPasswordModel = new ChangeCompanyPasswordModel();
         EditCompanyModel.Name = EditCompanyObject.Name;
         EditCompanyModel.Customer = EditCompanyObject.Customer;
     }
@@ -83,7 +110,7 @@
         await jsRuntime.InvokeAsync<object>("CloseModal", "editCompanyModal");
     }
 
-    private async void HandleValidSubmit()
+    private async void HandleValidEditSubmit()
     {
         EditCompanyModel.Id = EditCompanyObject.Id;
 
@@ -91,7 +118,27 @@
 
         if (!result.Item1)
         {
-            ResultMessage = result.Item2;
+            EditResultMessage = result.Item2;
+
+            return;
+        }
+        else
+        {
+            await CloseTaskModal();
+            DataChanged?.Invoke();
+        }
+
+    }
+
+    private async void HandleValidChangePasswordSubmit()
+    {
+        ChangeCompPasswordModel.Id = EditCompanyObject.Id;
+
+        (bool, string) result = await companyService.ChangePasswordAsync(ChangeCompPasswordModel);
+
+        if (!result.Item1)
+        {
+            ChangePasswordResultMessage = result.Item2;
 
             return;
         }
