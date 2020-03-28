@@ -1,0 +1,45 @@
+﻿@page "/workers"
+
+@using WorkerPayManager.Data
+
+@inject WorkerPayManager.Data.WorkerService workerService
+
+@attribute [Authorize]
+
+<h3>Workers</h3>
+
+<a class="nav-link" href="" data-toggle="modal" data-target="#addWorkerModal">
+    <span class="oi oi-plus" aria-hidden="true"></span> Add A Worker
+</a>
+
+
+<table class="table">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">First</th>
+            <th scope="col">Last</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th scope="row">1</th>
+            <td>Mark</td>
+            <td>Otto</td>
+        </tr>
+        <tr>
+            <th scope="row">2</th>
+            <td>Jacob</td>
+            <td>Thornton</td>
+        </tr>
+        <tr>
+            <th scope="row">3</th>
+            <td>Larry</td>
+            <td>the Bird</td>
+        </tr>
+    </tbody>
+</table>
+
+@code {
+
+}

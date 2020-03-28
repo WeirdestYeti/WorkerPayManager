@@ -1,0 +1,47 @@
+﻿@page "/company/customWorkerFields"
+
+@using WorkerPayManager.Data
+@using WorkerPayManager.Models.Workers
+
+@inject WorkerService workerService
+
+<AddCustomWorkerField DataChanged="StateChangeInvoke" />
+
+<h3>Custom Worker Fields</h3>
+
+<a class="nav-link" href="" data-toggle="modal" data-target="#addCustomWorkerFieldModal">
+    <span class="oi oi-plus" aria-hidden="true"></span> Add Custom Worker Field
+</a>
+
+
+
+
+<WorkerPayManager.Pages.Templates.TableTemplate Items="customWorkerFields" Context="CustomWorkerField" TableClass="table" HeaderClass="thead-dark" UseRowCount="true">
+    <TableHeader>
+        <th>Name</th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@CustomWorkerField.Name</td>
+    </RowTemplate>
+</WorkerPayManager.Pages.Templates.TableTemplate>
+
+
+@code {
+    private List<CustomWorkerField> customWorkerFields { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        customWorkerFields = await workerService.GetCustomWorkerFieldsAsync();
+    }
+
+    private async Task<List<CustomWorkerField>> GetCustomWorkerFields()
+    {
+        return await workerService.GetCustomWorkerFieldsAsync();
+    }
+
+    private async void StateChangeInvoke()
+    {
+        customWorkerFields = await GetCustomWorkerFields();
+        StateHasChanged();
+    }
+}

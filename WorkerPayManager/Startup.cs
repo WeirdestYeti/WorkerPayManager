@@ -42,6 +42,7 @@ namespace WorkerPayManager
             services.AddServerSideBlazor();
             services.AddSingleton<WeatherForecastService>();
             services.AddTransient<CompanyService>();
+            services.AddTransient<WorkerService>();
             services.AddSingleton<GlobalVariable>();
         }
 
