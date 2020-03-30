@@ -7,6 +7,10 @@
 
 <AddCustomWorkerField DataChanged="StateChangeInvoke" />
 
+<EditCustomWorkerField EditCustomField="EditCustomWorkerField" DataChanged="StateChangeInvoke" />
+
+<DeleteCustomWorkerField CustomWorkerField="CustomWorkerFieldToDelete" DataChanged="StateChangeInvoke"/>
+
 <h3>Custom Worker Fields</h3>
 
 <a class="nav-link" href="" data-toggle="modal" data-target="#addCustomWorkerFieldModal">
@@ -25,13 +29,13 @@
         <td>@CustomWorkerField.Name</td>
         <td>
             <div class="btn-group">
-                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" >
                     Action
                 </button>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item" href="#">Edit</a>
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#editCustomWorkerFieldModal" @onclick="(() => PrepareForEdit(CustomWorkerField))">Edit</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="#">Remove</a>
+                    <a class="dropdown-item text-danger" href="#"  data-toggle="modal" data-target="#deleteCustomWorkerFieldModal" @onclick="(() => PrepareForDelete(CustomWorkerField))">Remove</a>
                 </div>
             </div>
         </td>
@@ -40,16 +44,35 @@
 
 
 @code {
+    private CustomWorkerField CustomWorkerFieldToDelete { get; set; }
+
+    private EditCustomWorkerFieldModel EditCustomWorkerField { get; set; }
+
     private List<CustomWorkerField> customWorkerFields { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
         customWorkerFields = await workerService.GetCustomWorkerFieldsAsync();
+        EditCustomWorkerField = new EditCustomWorkerFieldModel();
+        CustomWorkerFieldToDelete = new CustomWorkerField();
     }
 
     private async Task<List<CustomWorkerField>> GetCustomWorkerFields()
     {
         return await workerService.GetCustomWorkerFieldsAsync();
+    }
+
+    private void PrepareForDelete(CustomWorkerField customWorkerField)
+    {
+        CustomWorkerFieldToDelete = customWorkerField;
+    }
+
+    private void PrepareForEdit(CustomWorkerField customWorkerField)
+    {
+        EditCustomWorkerFieldModel customWorkerFieldModel = new EditCustomWorkerFieldModel();
+        customWorkerFieldModel.Name = customWorkerField.Name;
+        customWorkerFieldModel.Id = customWorkerField.Id;
+        EditCustomWorkerField = customWorkerFieldModel;
     }
 
     private async void StateChangeInvoke()

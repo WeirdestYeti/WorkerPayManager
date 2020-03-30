@@ -34,14 +34,47 @@ namespace WorkerPayManager.Data
             {
                 CustomWorkerField customWorkerField = new CustomWorkerField();
                 customWorkerField.Name = name;
-                customWorkerField.Company = await _context.Companies.FirstOrDefaultAsync(x => x.Id == _globalVariable.SelectedCompanyId);
+                customWorkerField.Company = await _context.Companies.SingleOrDefaultAsync(x => x.Id == _globalVariable.SelectedCompanyId);
                 _context.CustomWorkerFields.Add(customWorkerField);
                 await _context.SaveChangesAsync();
 
                 return (true, "Added");
             }
             else return (false, "Company is not selected.");
-            
+        }
+
+        public async Task<(bool, string)> EditCustomWorkerFieldAsync(EditCustomWorkerFieldModel editCustomWorkerFieldModel)
+        {
+            if (_globalVariable.IsCompanySelected)
+            {
+                CustomWorkerField customWorkerField = await _context.CustomWorkerFields.SingleOrDefaultAsync(x => x.Id == editCustomWorkerFieldModel.Id);
+                if (customWorkerField != null)
+                {
+                    customWorkerField.Name = editCustomWorkerFieldModel.Name;
+                    _context.CustomWorkerFields.Update(customWorkerField);
+                    await _context.SaveChangesAsync();
+                    return (true, "Updated.");
+                }
+                else return (false, "Id not found.");
+            }
+            else return (false, "Company not selected.");
+        }
+
+        public async Task<(bool, string)> DeleteCustomWorkerFieldAsync(int id)
+        {
+            if (_globalVariable.IsCompanySelected)
+            {
+                CustomWorkerField customWorkerField = await _context.CustomWorkerFields.SingleOrDefaultAsync(x => x.Id == id);
+                if (customWorkerField != null)
+                {
+                    _context.CustomWorkerFieldValues.RemoveRange(_context.CustomWorkerFieldValues.Where(x => x.CustomWorkerField.Id == customWorkerField.Id));
+                    _context.CustomWorkerFields.Remove(customWorkerField);
+                    await _context.SaveChangesAsync();
+                    return (true, "Removed");
+                }
+                else return (false, "Id not found.");
+            }
+            else return (false, "Company not selected.");
         }
 
     }

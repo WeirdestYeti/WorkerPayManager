@@ -1,0 +1,60 @@
+﻿@using WorkerPayManager.Data
+@using WorkerPayManager.Models.Workers
+
+@inject IJSRuntime jsRuntime
+@inject WorkerPayManager.Data.WorkerService workerService
+
+<div class="modal fade" tabindex="-1" role="dialog" id="deleteCustomWorkerFieldModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Are you sure you want do delete? (@CustomWorkerField.Name)</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button type="submit" class="btn btn-danger" @onclick="HandleValidSubmit">Confirm</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            </div>    
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    private string _resultMessage { get; set; }
+
+    [Parameter]
+    public CustomWorkerField CustomWorkerField { get; set; }
+
+    [Parameter]
+    public Action DataChanged { get; set; }
+
+    private async Task CloseTaskModal()
+    {
+        await jsRuntime.InvokeAsync<object>("CloseModal", "deleteCustomWorkerFieldModal");
+    }
+
+    protected override void OnInitialized()
+    {
+    }
+
+    private async void HandleValidSubmit()
+    {
+        (bool, string) result = await workerService.DeleteCustomWorkerFieldAsync(CustomWorkerField.Id);
+
+        if (!result.Item1)
+        {
+            _resultMessage = result.Item2;
+        }
+        else
+        {
+            await CloseTaskModal();
+            DataChanged?.Invoke();
+        }
+
+    }
+
+}

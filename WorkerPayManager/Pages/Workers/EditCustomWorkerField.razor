@@ -4,17 +4,17 @@
 @inject IJSRuntime jsRuntime
 @inject WorkerPayManager.Data.WorkerService workerService
 
-<div class="modal fade" tabindex="-1" role="dialog" id="addCustomWorkerFieldModal">
+<div class="modal fade" tabindex="-1" role="dialog" id="editCustomWorkerFieldModal">
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Add a custom worker field</h5>
+                <h5 class="modal-title">Edit a custom worker field</h5>
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                     <span aria-hidden="true">×</span>
                 </button>
             </div>
             <div class="modal-body">
-                <EditForm Model="_newCustomField" OnValidSubmit="HandleValidSubmit">
+                <EditForm Model="EditCustomField" OnValidSubmit="HandleValidSubmit">
                     <DataAnnotationsValidator />
                     <ValidationSummary />
 
@@ -27,7 +27,7 @@
 
                     <div class="form-group">
                         <label for="name">Name</label>
-                        <InputText id="name" class="form-control" @bind-Value="_newCustomField.Name"></InputText>
+                        <InputText id="name" class="form-control" @bind-Value="EditCustomField.Name"></InputText>
                     </div>
 
                     <button type="submit" class="btn btn-primary">Submit</button>
@@ -49,20 +49,20 @@
 
     private async Task CloseTaskModal()
     {
-        await jsRuntime.InvokeAsync<object>("CloseModal", "addCustomWorkerFieldModal");
+        await jsRuntime.InvokeAsync<object>("CloseModal", "editCustomWorkerFieldModal");
     }
 
     protected override void OnInitialized()
     {
-        _newCustomField = new AddCustomWorkerFieldModel();
     }
 
-    private AddCustomWorkerFieldModel _newCustomField { get; set; }
+    [Parameter]
+    public EditCustomWorkerFieldModel EditCustomField { get; set; }
 
 
     private async void HandleValidSubmit()
     {
-        (bool, string) result = await workerService.AddCustomWorkerFieldAsync(_newCustomField.Name);
+        (bool, string) result = await workerService.EditCustomWorkerFieldAsync(EditCustomField);
 
         if (!result.Item1)
         {
@@ -71,7 +71,6 @@
         else
         {
             await CloseTaskModal();
-            _newCustomField = new AddCustomWorkerFieldModel();
             DataChanged?.Invoke();
         }
 
