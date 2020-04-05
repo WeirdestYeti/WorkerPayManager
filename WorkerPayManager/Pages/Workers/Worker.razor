@@ -1,6 +1,7 @@
 ﻿@page "/workers"
 
 @using WorkerPayManager.Data
+@using WorkerPayManager.Models.Workers
 
 @inject WorkerPayManager.Data.WorkerService workerService
 
@@ -14,39 +15,50 @@
     <span class="oi oi-plus" aria-hidden="true"></span> Add A Worker
 </a>
 
+<WorkerPayManager.Pages.Templates.TableTemplate Items="_workers" Context="Worker" TableClass="table" HeaderClass="thead-dark" UseRowCount="true">
+    <TableHeader>
+        <th>First Name</th>
+        <th>Last Name</th>
+        <th>Number</th>
+        <th>Date Of Birth</th>
+        <th>Date Created</th>
+        <th>Action</th>
+    </TableHeader>
+    <RowTemplate>
+        <td>@Worker.FirstName</td>
+        <td>@Worker.LastName</td>
+        <td>@Worker.IdentificationNumber</td>
+        <td>@Worker.DateOfBirth.ToString("dd/MM/yyyy")</td>
+        <td>@Worker.CreationDate.ToString("dd/MM/yyyy hh:mm:ss")</td>
+        <td>
+            <div class="btn-group">
+                <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    Action
+                </button>
+                <div class="dropdown-menu">
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#editCustomWorkerFieldModal" >Edit</a>
+                    <div class="dropdown-divider"></div>
+                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteCustomWorkerFieldModal" >Remove</a>
+                </div>
+            </div>
+        </td>
+    </RowTemplate>
+</WorkerPayManager.Pages.Templates.TableTemplate>
 
-<table class="table">
-    <thead class="thead-dark">
-        <tr>
-            <th scope="col">#</th>
-            <th scope="col">First</th>
-            <th scope="col">Last</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <th scope="row">1</th>
-            <td>Mark</td>
-            <td>Otto</td>
-        </tr>
-        <tr>
-            <th scope="row">2</th>
-            <td>Jacob</td>
-            <td>Thornton</td>
-        </tr>
-        <tr>
-            <th scope="row">3</th>
-            <td>Larry</td>
-            <td>the Bird</td>
-        </tr>
-    </tbody>
-</table>
 
 @code {
 
+    private List<WorkerPayManager.Models.Workers.Worker> _workers { get; set; }
+
+    protected override void OnInitialized()
+    {
+        UpdateWorkers();
+    }
+
     private async void UpdateWorkers()
     {
-
+        _workers = await workerService.GetWorkersAsync();
+        StateHasChanged();
     }
 
 }

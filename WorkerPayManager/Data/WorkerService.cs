@@ -132,15 +132,15 @@ namespace WorkerPayManager.Data
             }
             else return (false, "Company not selected.");
         }
-
-        //public async Task<(bool, string)> AddWorkerAsync(AddWorkerModel addWorkerModel)
-        //{
-        //    if (_globalVariable.IsCompanySelected)
-        //    {
-
-        //    }
-        //    else return (false, "Company not selected.");
-        //}
+        
+        public async Task<List<Worker>> GetWorkersAsync()
+        {
+            if (_globalVariable.IsCompanySelected)
+            {
+                return await _context.Workers.Where(x => x.Company.Id == _globalVariable.SelectedCompanyId).ToListAsync();
+            }
+            else return new List<Worker>();
+        }
 
 
 
