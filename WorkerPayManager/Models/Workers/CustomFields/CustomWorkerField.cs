@@ -11,5 +11,6 @@ namespace WorkerPayManager.Models.Workers
         public int Id { get; set; }
         public Company Company { get; set; }
         public string Name { get; set; }
+        public bool IsRequired { get; set; }
     }
 }

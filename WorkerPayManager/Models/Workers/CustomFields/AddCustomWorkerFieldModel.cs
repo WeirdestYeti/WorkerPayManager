@@ -11,5 +11,7 @@ namespace WorkerPayManager.Models.Workers
         [Required]
         [StringLength(100, MinimumLength = 1, ErrorMessage = "Name needs to 1-100 characters.")]
         public string Name { get; set; }
+        [Display(Name = "Is Required?")]
+        public bool IsRequired { get; set; }
     }
 }

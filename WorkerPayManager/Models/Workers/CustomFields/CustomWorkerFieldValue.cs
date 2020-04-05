@@ -13,5 +13,18 @@ namespace WorkerPayManager.Models.Workers
         public CustomWorkerField CustomWorkerField { get; set; }
         public Worker Worker { get; set; }
         public string Value { get; set; }
+
+        public CustomWorkerFieldValue(CustomWorkerField customWorkerField, Worker worker, string value = "")
+        {
+            CustomWorkerField = customWorkerField;
+            Worker = worker;
+            if (value == null) Value = "";
+            else Value = value;
+        }
+
+        public CustomWorkerFieldValue()
+        {
+
+        }
     }
 }

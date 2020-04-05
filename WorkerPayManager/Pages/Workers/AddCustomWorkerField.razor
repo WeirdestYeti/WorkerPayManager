@@ -29,6 +29,14 @@
                         <label for="name">Name</label>
                         <InputText id="name" class="form-control" @bind-Value="_newCustomField.Name"></InputText>
                     </div>
+                    <div class="form-group">
+                        <div class="form-check">
+                            <InputCheckbox class="form-check-input"  @bind-Value="_newCustomField.IsRequired"/>
+                            <label class="form-check-label" for="gridCheck">
+                                Is Required?
+                            </label>
+                        </div>
+                    </div>
 
                     <button type="submit" class="btn btn-primary">Submit</button>
                     <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
@@ -62,7 +70,7 @@
 
     private async void HandleValidSubmit()
     {
-        (bool, string) result = await workerService.AddCustomWorkerFieldAsync(_newCustomField.Name);
+        (bool, string) result = await workerService.AddCustomWorkerFieldAsync(_newCustomField.Name, _newCustomField.IsRequired);
 
         if (!result.Item1)
         {

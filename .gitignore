@@ -11,13 +11,7 @@
 *.userprefs
 
 #server files
-server/client_packages/*
-server/bridge/resources/roleplay/*
-server/bridge/server_exceptions.txt
-server/bridge/server_logs.txt
-!server/bridge/resources/roleplay/meta.xml
-!server/bridge/resources/roleplay/readme.txt
-!server/client_packages/readme.txt
+*.db*
 
 # Build results
 [Dd]ebug/
