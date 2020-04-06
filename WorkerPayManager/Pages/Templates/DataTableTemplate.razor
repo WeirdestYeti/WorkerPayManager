@@ -1,13 +1,26 @@
 ﻿@typeparam TItem
 
-<table class="table">
-    <thead>
-        <tr>@TableHeader</tr>
+<table class="@TableClass">
+    <thead class="@HeaderClass">
+        <tr>
+            @if (UseRowCount)
+            {
+                <th>#</th>
+            }
+            @TableHeader
+        </tr>
     </thead>
     <tbody>
         @foreach (var item in Items)
         {
-            <tr>@RowTemplate(item)</tr>
+            <tr>
+                @if (UseRowCount)
+                {
+                    _rowCount++;
+                    <td>@_rowCount</td>
+                }
+                @RowTemplate(item)
+            </tr>
         }
     </tbody>
     <tfoot>
@@ -16,6 +29,23 @@
 </table>
 
 @code {
+
+    protected override void OnParametersSet()
+    {
+        _rowCount = 0;
+    }
+
+    private int _rowCount { get; set; }
+
+    [Parameter]
+    public bool UseRowCount { get; set; }
+
+    [Parameter]
+    public string TableClass { get; set; }
+
+    [Parameter]
+    public string HeaderClass { get; set; }
+
     [Parameter]
     public RenderFragment TableHeader { get; set; }
 

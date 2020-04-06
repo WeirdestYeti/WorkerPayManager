@@ -15,21 +15,21 @@
     <span class="oi oi-plus" aria-hidden="true"></span> Add A Worker
 </a>
 
-<WorkerPayManager.Pages.Templates.TableTemplate Items="_workers" Context="Worker" TableClass="table" HeaderClass="thead-dark" UseRowCount="true">
+<WorkerPayManager.Pages.Templates.TableTemplate Items="_workers" TableClass="table" HeaderClass="thead-dark" UseRowCount="true">
     <TableHeader>
-        <th>First Name</th>
-        <th>Last Name</th>
-        <th>Number</th>
-        <th>Date Of Birth</th>
-        <th>Date Created</th>
+        <th @onclick="(() => OrderByProperty(0, x => x.FirstName))">First Name @GetSortedByArrow(_headerSort[0])</th>
+        <th @onclick="(() => OrderByProperty(1, x => x.LastName))">Last Name @GetSortedByArrow(_headerSort[1])</th>
+        <th @onclick="(() => OrderByProperty(2, x => x.IdentificationNumber))">Number @GetSortedByArrow(_headerSort[2])</th>
+        <th @onclick="(() => OrderByProperty(3, x => x.DateOfBirth))">Date Of Birth @GetSortedByArrow(_headerSort[3])</th>
+        <th @onclick="(() => OrderByProperty(4, x => x.CreationDate))">Date Created @GetSortedByArrow(_headerSort[4])</th>
         <th>Action</th>
     </TableHeader>
     <RowTemplate>
-        <td>@Worker.FirstName</td>
-        <td>@Worker.LastName</td>
-        <td>@Worker.IdentificationNumber</td>
-        <td>@Worker.DateOfBirth.ToString("dd/MM/yyyy")</td>
-        <td>@Worker.CreationDate.ToString("dd/MM/yyyy hh:mm:ss")</td>
+        <td>@context.FirstName</td>
+        <td>@context.LastName</td>
+        <td>@context.IdentificationNumber</td>
+        <td>@context.DateOfBirth.ToString("dd/MM/yyyy")</td>
+        <td>@context.CreationDate.ToString("dd/MM/yyyy hh:mm:ss")</td>
         <td>
             <div class="btn-group">
                 <button type="button" class="btn btn-info dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -48,10 +48,17 @@
 
 @code {
 
+    private List<SortArrows> _headerSort { get; set; }
+
     private List<WorkerPayManager.Models.Workers.Worker> _workers { get; set; }
 
     protected override void OnInitialized()
     {
+        _headerSort = new List<SortArrows>();
+        for (int i = 0; i < 5; i++)
+        {
+            _headerSort.Add(SortArrows.UpAndDown);
+        }
         UpdateWorkers();
     }
 
@@ -59,6 +66,41 @@
     {
         _workers = await workerService.GetWorkersAsync();
         StateHasChanged();
+    }
+
+    private void OrderByProperty(int headearId, Func<WorkerPayManager.Models.Workers.Worker, IComparable> getProp)
+    {
+        if(_headerSort[headearId] == SortArrows.Down || _headerSort[headearId] == SortArrows.UpAndDown)
+        {
+            _workers.Sort((x, y) => getProp(x).CompareTo(getProp(y)));
+            _headerSort[headearId] = SortArrows.Up;
+        }
+        else
+        {
+            _workers.Sort((x, y) => getProp(y).CompareTo(getProp(x)));
+            _headerSort[headearId] = SortArrows.Down;
+        }
+        for (int i = 0; i < 5; i++)
+        {
+            if(i != headearId)
+            {
+                _headerSort[i] = SortArrows.UpAndDown;
+            }
+        }
+    }
+
+    private string GetSortedByArrow(SortArrows sortArrows)
+    {
+        if (sortArrows == SortArrows.Up) return "↑";
+        else if (sortArrows == SortArrows.Down) return "↓";
+        else return "↑↓";
+    }
+
+    private enum SortArrows
+    {
+        Up,
+        Down,
+        UpAndDown
     }
 
 }
