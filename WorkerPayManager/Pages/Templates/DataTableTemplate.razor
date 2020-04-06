@@ -1,4 +1,5 @@
-﻿@typeparam TItem
+﻿
+@typeparam TItem
 
 <table class="@TableClass">
     <thead class="@HeaderClass">
@@ -7,7 +8,18 @@
             {
                 <th>#</th>
             }
-            @TableHeader
+            @for (int i = 0; i < PropertiesList.Count; i++)
+            {
+                if (PropertiesList[i].Item1 != null)
+                {
+                    int tempInt = i;
+                    <th @onclick="(() => OrderByProperty(tempInt, PropertiesList[tempInt].Item1))">@PropertiesList[tempInt].Item2 @GetSortedByArrow(_headerSort[tempInt])</th>
+                }
+                else
+                {
+                    <th>@PropertiesList[i].Item2</th>
+                }
+            }
         </tr>
     </thead>
     <tbody>
@@ -30,9 +42,70 @@
 
 @code {
 
+    @*
+        Dynamic sortable table template
+        Usage: Same as TableTamplate but you need to add a list of properties togheter,
+        with header names which are the same type of Items passed thru.
+        Type is a List of Tuple with Func and a string = List<(Func<dynamic, IComparable>, string)>
+
+        If you want a non sortable table header, then as first Tuple param pass NULL.
+
+        Example:
+
+        List<(Func<dynamic, IComparable>, string)> propertiesList = new List<(Func<dynamic, IComparable>, string)>();
+        propertiesList.Add((x => x.FirstName, "First Name"));
+        propertiesList.Add((x => x.LastName, "Last Name"));
+        propertiesList.Add((null, "Action"));
+    *@
+
+    [Parameter]
+    public List<(Func<dynamic, IComparable>, string)> PropertiesList { get; set; }
+
+    private List<SortArrows> _headerSort { get; set; }
+
     protected override void OnParametersSet()
     {
+        _headerSort = new List<SortArrows>();
+        for (int i = 0; i < PropertiesList.Count; i++)
+        {
+            _headerSort.Add(SortArrows.UpAndDown);
+        }
+    }
+
+    private void OrderByProperty(int headearId, Func<dynamic, IComparable> getProp)
+    {
+        if (_headerSort[headearId] == SortArrows.Down || _headerSort[headearId] == SortArrows.UpAndDown)
+        {
+            Items.Sort((x, y) => getProp(x).CompareTo(getProp(y)));
+            _headerSort[headearId] = SortArrows.Up;
+        }
+        else
+        {
+            Items.Sort((x, y) => getProp(y).CompareTo(getProp(x)));
+            _headerSort[headearId] = SortArrows.Down;
+        }
+        for (int i = 0; i < PropertiesList.Count; i++)
+        {
+            if (i != headearId)
+            {
+                _headerSort[i] = SortArrows.UpAndDown;
+            }
+        }
         _rowCount = 0;
+    }
+
+    private string GetSortedByArrow(SortArrows sortArrows)
+    {
+        if (sortArrows == SortArrows.Up) return "↑";
+        else if (sortArrows == SortArrows.Down) return "↓";
+        else return "↑↓";
+    }
+
+    private enum SortArrows
+    {
+        Up,
+        Down,
+        UpAndDown
     }
 
     private int _rowCount { get; set; }
@@ -47,14 +120,11 @@
     public string HeaderClass { get; set; }
 
     [Parameter]
-    public RenderFragment TableHeader { get; set; }
-
-    [Parameter]
     public RenderFragment<TItem> RowTemplate { get; set; }
 
     [Parameter]
     public RenderFragment TableFooter { get; set; }
 
     [Parameter]
-    public IReadOnlyList<TItem> Items { get; set; }
+    public List<TItem> Items { get; set; }
 }
