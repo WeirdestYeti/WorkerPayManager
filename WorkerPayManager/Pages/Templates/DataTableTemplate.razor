@@ -1,6 +1,29 @@
 ﻿
 @typeparam TItem
 
+<div class="row">
+    <div class="col-4">
+        <div class="form-inline">
+            <label class="my-1 mr-2">Show</label>
+            <select class="form-control form-control-sm" @onchange="showRowsSelectionChange">
+                <option>10</option>
+                <option>25</option>
+                <option>50</option>
+                <option>100</option>
+            </select>
+        </div>
+    </div>
+    <div class="col-6"></div>
+    <div class="col-2">
+        <div class="input-group mb-3 input-group-sm">
+            <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." aria-describedby="button-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-info" type="button" id="button-addon2">Search</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <table class="@TableClass">
     <thead class="@HeaderClass">
         <tr>
@@ -23,13 +46,13 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var item in Items)
+        @foreach (var item in _listToShow)
         {
             <tr>
                 @if (UseRowCount)
                 {
                     _rowCount++;
-                    <td>@_rowCount</td>
+                    <td>@(_rowCount + _skip)</td>
                 }
                 @RowTemplate(item)
             </tr>
@@ -40,23 +63,94 @@
     </tfoot>
 </table>
 
+
+
+<div class="row">
+    <div class="col-4">
+        <div role="status" aria-live="polite">
+            Showing @(((_currentPage-1) * ShowRecords) + 1) to @(_maxPages == _currentPage ? Items.Count : ((_currentPage - 1) * ShowRecords) + ShowRecords) of @Items.Count entries
+        </div>
+    </div>
+    <div class="col-8">
+        <nav aria-label="Page navigation example">
+            <ul class="pagination justify-content-end">
+                <li class="page-item @(_currentPage == 1 ? "disabled" : "")">
+                    <a class="page-link" @onclick="(() => SwitchPage(_currentPage - 1))" href="" @onclick:preventDefault tabindex="-1">Previous</a>
+                </li>
+                @for (int i = 1; i < _maxPages + 1; i++)
+                {
+                    int tempInt = i;
+                    <li class="page-item @(_currentPage == i ? "active" : "")">
+                        <a href="" class="page-link" @onclick="(() => SwitchPage(tempInt))" @onclick:preventDefault>@i</a>
+                    </li>
+                }
+                <li class="page-item @(_currentPage == _maxPages ? "disabled" : "")">
+                    <a class="page-link" @onclick="(() => SwitchPage(_currentPage + 1))" href="" @onclick:preventDefault>Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+</div>
+
+
+
+@*
+    Dynamic sortable table template
+    Usage: Same as TableTamplate but you need to add a list of properties togheter,
+    with header names which are the same type of Items passed thru.
+    Type is a List of Tuple with Func and a string = List<(Func<dynamic, IComparable>, string)>
+
+    If you want a non sortable table header, then as first Tuple param pass NULL.
+
+    Example:
+
+    List<(Func<dynamic, IComparable>, string)> propertiesList = new List<(Func<dynamic, IComparable>, string)>();
+    propertiesList.Add((x => x.FirstName, "First Name"));
+    propertiesList.Add((x => x.LastName, "Last Name"));
+    propertiesList.Add((null, "Action"));
+*@
+
 @code {
 
-    @*
-        Dynamic sortable table template
-        Usage: Same as TableTamplate but you need to add a list of properties togheter,
-        with header names which are the same type of Items passed thru.
-        Type is a List of Tuple with Func and a string = List<(Func<dynamic, IComparable>, string)>
+    // Pagination Start
 
-        If you want a non sortable table header, then as first Tuple param pass NULL.
+    [Parameter]
+    public int ShowRecords { get; set; }
 
-        Example:
+    private int _skip { get; set; }
 
-        List<(Func<dynamic, IComparable>, string)> propertiesList = new List<(Func<dynamic, IComparable>, string)>();
-        propertiesList.Add((x => x.FirstName, "First Name"));
-        propertiesList.Add((x => x.LastName, "Last Name"));
-        propertiesList.Add((null, "Action"));
-    *@
+    private int _currentPage { get; set; }
+    private int _maxPages
+    {
+        get
+        {
+            return (Items.Count / ShowRecords) + 1;
+        }
+    }
+
+    private void SwitchPage(int toPage)
+    {
+        if(!(toPage < 1) && !(toPage > _maxPages))
+        {
+            _currentPage = toPage;
+        }
+        GetItemsToShow();
+    }
+
+    private void showRowsSelectionChange(ChangeEventArgs e)
+    {
+        int selection;
+        bool result = Int32.TryParse(e.Value.ToString(), out selection);
+        if(result)
+        {
+            ShowRecords = selection;
+            _currentPage = 1;
+            GetItemsToShow();
+        }
+    }
+    // Pagination End
+
+    private List<TItem> _listToShow { get; set; }
 
     [Parameter]
     public List<(Func<dynamic, IComparable>, string)> PropertiesList { get; set; }
@@ -70,6 +164,23 @@
         {
             _headerSort.Add(SortArrows.UpAndDown);
         }
+        _currentPage = 1;
+
+        // 
+        GetItemsToShow();
+    }
+
+    public void GetItemsToShow()
+    {
+
+        _skip = (_currentPage - 1) * ShowRecords;
+
+        _listToShow = Items.Skip(_skip).Take(ShowRecords).ToList();
+    }
+
+    protected override void OnAfterRender(bool firstRender)
+    {
+        _rowCount = 0;
     }
 
     private void OrderByProperty(int headearId, Func<dynamic, IComparable> getProp)
