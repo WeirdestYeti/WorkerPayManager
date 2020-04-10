@@ -1,7 +1,7 @@
 ﻿
 @typeparam TItem
 
-<div class="row">
+<div class="row pb-3">
     <div class="col-4">
         <div class="form-inline">
             <label class="my-1 mr-2">Show</label>
@@ -13,14 +13,9 @@
             </select>
         </div>
     </div>
-    <div class="col-6"></div>
-    <div class="col-2">
-        <div class="input-group mb-3 input-group-sm">
-            <input type="text" class="form-control" placeholder="Search..." aria-label="Search..." aria-describedby="button-addon2">
-            <div class="input-group-append">
-                <button class="btn btn-info" type="button" id="button-addon2">Search</button>
-            </div>
-        </div>
+    <div class="col-7"></div>
+    <div class="col-1">
+        <input type="text" class="form-control form-control-sm" placeholder="Search..." aria-label="Search..." aria-describedby="button-addon2" @oninput="onSearch">
     </div>
 </div>
 
@@ -68,7 +63,7 @@
 <div class="row">
     <div class="col-4">
         <div role="status" aria-live="polite">
-            Showing @(((_currentPage-1) * ShowRecords) + 1) to @(_maxPages == _currentPage ? Items.Count : ((_currentPage - 1) * ShowRecords) + ShowRecords) of @Items.Count entries
+            @StatusString
         </div>
     </div>
     <div class="col-8">
@@ -117,6 +112,33 @@
     [Parameter]
     public int ShowRecords { get; set; }
 
+    private int _searchedListCount {get;set;}
+
+    private string StatusString
+    {
+        get
+        {
+            int showingFrom;
+            int showingTo;
+            int total;
+
+            showingFrom = ((_currentPage - 1) * ShowRecords) + 1;
+
+            if (string.IsNullOrEmpty(_searchTerm) || string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                showingTo = _maxPages == _currentPage ? Items.Count : ((_currentPage - 1) * ShowRecords) + ShowRecords;
+                total = Items.Count;
+            }
+            else
+            {
+                showingTo = _maxPages == _currentPage ? _searchedListCount : ((_currentPage - 1) * ShowRecords) + ShowRecords;
+                total = _searchedListCount;
+            }
+
+            return $"Showing {showingFrom} to {showingTo} of {total} entries";
+        }
+    }
+
     private int _skip { get; set; }
 
     private int _currentPage { get; set; }
@@ -124,7 +146,14 @@
     {
         get
         {
-            return (Items.Count / ShowRecords) + 1;
+            if (string.IsNullOrEmpty(_searchTerm) || string.IsNullOrWhiteSpace(_searchTerm))
+            {
+                return (Items.Count / ShowRecords) + 1;
+            }
+            else
+            {
+                return (_searchedListCount / ShowRecords) + 1;
+            }
         }
     }
 
@@ -150,6 +179,17 @@
     }
     // Pagination End
 
+    private string _searchTerm { get; set; }
+
+    private void onSearch(ChangeEventArgs eventArgs)
+    {
+        _searchTerm = eventArgs.Value.ToString();
+        _currentPage = 1;
+
+        GetItemsToShow();
+
+    }
+
     private List<TItem> _listToShow { get; set; }
 
     [Parameter]
@@ -172,10 +212,32 @@
 
     public void GetItemsToShow()
     {
-
         _skip = (_currentPage - 1) * ShowRecords;
 
-        _listToShow = Items.Skip(_skip).Take(ShowRecords).ToList();
+        if (string.IsNullOrEmpty(_searchTerm) || string.IsNullOrWhiteSpace(_searchTerm))
+        {
+            _listToShow = Items.Skip(_skip).Take(ShowRecords).ToList();
+        }
+        else
+        {
+            List<TItem> results = new List<TItem>();
+            foreach (var item in PropertiesList)
+            {
+                if(item.Item1 != null)
+                {
+                    var tempList = Items.Where(x => item.Item1(x).ToString().ToLower().Contains(_searchTerm.ToLower())).ToList();
+                    if (tempList != null && tempList.Count > 0) ;
+                    {
+                        results.AddRange(tempList);
+                    }
+                }
+            }
+            results = results.Distinct().ToList();
+            _searchedListCount = results.Count;
+            _listToShow = results.Skip(_skip).Take(ShowRecords).ToList();
+        }
+
+
     }
 
     protected override void OnAfterRender(bool firstRender)
