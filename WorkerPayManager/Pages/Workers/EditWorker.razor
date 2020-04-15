@@ -1,0 +1,127 @@
+﻿@using WorkerPayManager.Data
+@using WorkerPayManager.Models.Workers
+
+@inject IJSRuntime jsRuntime
+@inject WorkerPayManager.Data.WorkerService workerService
+
+<div class="modal fade" tabindex="-1" role="dialog" id="editWorkerModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit a worker</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <EditForm Model="EditWorkerModel" OnValidSubmit="HandleValidSubmit">
+                    <ValidationSummary />
+                    <ObjectGraphDataAnnotationsValidator />
+
+                    @if (_resultMessage != null)
+                    {
+                        <ul class="validation-errors">
+                            <li class="validation-message">@_resultMessage</li>
+                        </ul>
+                    }
+
+                    <div class="form-group">
+                        <label for="identificationNumber">Identification Number</label>
+                        <InputNumber class="form-control" @bind-Value="EditWorkerModel.IdentificationNumber"></InputNumber>
+                    </div>
+                    <div class="form-group">
+                        <label for="firstName">First Name*</label>
+                        <InputText id="firstName" class="form-control" @bind-Value="EditWorkerModel.FirstName"></InputText>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Last Name*</label>
+                        <InputText id="lastName" class="form-control" @bind-Value="EditWorkerModel.LastName"></InputText>
+                    </div>
+                    <div class="form-group">
+                        <label for="date">Date Of Birth*</label>
+                        <InputDate class="form-control" @bind-Value="EditWorkerModel.BirthDate"></InputDate>
+                    </div>
+
+                    <h5>Custom:</h5>
+
+                    @foreach (var item in EditWorkerModel.CustomFieldValues)
+                    {
+                        <div class="form-group">
+                            <label for="name">@item.Name @(item.IsRequired ? "*" : "")</label>
+                            <InputText id="@item.Name" class="form-control" @bind-Value="item.Value"></InputText>
+                        </div>
+                    }
+
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@code {
+
+    private EditContext _editContext { get; set; }
+
+    private string _resultMessage { get; set; }
+
+    [Parameter]
+    public Action DataChanged { get; set; }
+
+    [Parameter]
+    public WorkerPayManager.Models.Workers.EditWorkerModel EditWorkerModel { get; set; }
+
+    private async Task CloseTaskModal()
+    {
+        await jsRuntime.InvokeAsync<object>("CloseModal", "editWorkerModal");
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await createFormModel();
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await createFormModel();
+    }
+
+    private async Task createFormModel()
+    {
+        List<CustomWorkerField> customWorkerFields = await workerService.GetCustomWorkerFieldsAsync();
+
+        EditWorkerModel.CustomFieldValues = new List<IAddWorkerCustomFieldModel>();
+
+        foreach (var item in customWorkerFields)
+        {
+            if (item.IsRequired)
+            {
+                EditWorkerModel.CustomFieldValues.Add(new AddWorkerCustomFieldRequiredModel(item.Id, item.Name, item.IsRequired));
+            }
+            else
+            {
+                EditWorkerModel.CustomFieldValues.Add(new AddWorkerCustomFieldModel(item.Id, item.Name, item.IsRequired));
+            }
+        }
+    }
+
+    private async void HandleValidSubmit()
+    {
+        //(bool, string) result = await workerService.AddWorkerAsync(_editWorkerModel);
+
+        //if (!result.Item1)
+        //{
+        //    _resultMessage = result.Item2;
+        //}
+        //else
+        //{
+        //    await CloseTaskModal();
+        //    await createFormModel();
+        //    DataChanged?.Invoke();
+        //}
+
+    }
+
+}

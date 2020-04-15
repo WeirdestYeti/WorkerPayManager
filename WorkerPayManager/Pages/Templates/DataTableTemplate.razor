@@ -40,25 +40,31 @@
             }
         </tr>
     </thead>
-    <tbody>
-        @foreach (var item in _listToShow)
-        {
-            <tr>
-                @if (UseRowCount)
-                {
-                    _rowCount++;
-                    <td>@(_rowCount + _skip)</td>
-                }
-                @RowTemplate(item)
-            </tr>
-        }
-    </tbody>
+    @if (_listToShow.Count > 0)
+    {
+        <tbody>
+            @foreach (var item in _listToShow)
+            {
+                <tr>
+                    @if (UseRowCount)
+                    {
+                        _rowCount++;
+                        <td>@(_rowCount + _skip)</td>
+                    }
+                    @RowTemplate(item)
+                </tr>
+            }
+        </tbody>
+    }
     <tfoot>
         <tr>@TableFooter</tr>
     </tfoot>
 </table>
 
-
+@if (_listToShow.Count == 0)
+{
+    <p class="text-center">No data found...</p>
+}
 
 <div class="row">
     <div class="col-4">
@@ -112,7 +118,7 @@
     [Parameter]
     public int ShowRecords { get; set; }
 
-    private int _searchedListCount {get;set;}
+    private int _searchedListCount { get; set; }
 
     private string StatusString
     {
@@ -141,7 +147,7 @@
 
     private int _skip { get; set; }
 
-    private int _currentPage { get; set; }
+    private int _currentPage { get; set; } = 1;
     private int _maxPages
     {
         get
@@ -159,7 +165,7 @@
 
     private void SwitchPage(int toPage)
     {
-        if(!(toPage < 1) && !(toPage > _maxPages))
+        if (!(toPage < 1) && !(toPage > _maxPages))
         {
             _currentPage = toPage;
         }
@@ -170,7 +176,7 @@
     {
         int selection;
         bool result = Int32.TryParse(e.Value.ToString(), out selection);
-        if(result)
+        if (result)
         {
             ShowRecords = selection;
             _currentPage = 1;
@@ -204,9 +210,8 @@
         {
             _headerSort.Add(SortArrows.UpAndDown);
         }
-        _currentPage = 1;
 
-        // 
+        //
         GetItemsToShow();
     }
 
@@ -223,7 +228,7 @@
             List<TItem> results = new List<TItem>();
             foreach (var item in PropertiesList)
             {
-                if(item.Item1 != null)
+                if (item.Item1 != null)
                 {
                     var tempList = Items.Where(x => item.Item1(x).ToString().ToLower().Contains(_searchTerm.ToLower())).ToList();
                     if (tempList != null && tempList.Count > 0) ;
@@ -264,6 +269,7 @@
                 _headerSort[i] = SortArrows.UpAndDown;
             }
         }
+        _currentPage = 1;
         GetItemsToShow();
     }
 

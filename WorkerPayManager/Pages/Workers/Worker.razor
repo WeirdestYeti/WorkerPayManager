@@ -11,6 +11,8 @@
 
 <AddWorker DataChanged="UpdateWorkers" />
 
+<EditWorker DataChanged="UpdateWorkers" EditWorkerModel="_editWorkerModel" />
+
 <a class="nav-link" href="" data-toggle="modal" data-target="#addWorkerModal">
     <span class="oi oi-plus" aria-hidden="true"></span> Add A Worker
 </a>
@@ -30,9 +32,9 @@
                     Action
                 </button>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#editCustomWorkerFieldModal">Edit</a>
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#editWorkerModal" @onclick="(() => PrepareForEdit(context.Id))">Edit</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteCustomWorkerFieldModal">Remove</a>
+                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteWorkerModal">Remove</a>
                 </div>
             </div>
         </td>
@@ -43,9 +45,11 @@
 @code {
     private List<(Func<dynamic, IComparable>, string)> _propertiesList { get; set; }
 
-    private List<WorkerPayManager.Models.Workers.Worker> _workers { get; set; }
+    private EditWorkerModel _editWorkerModel = new EditWorkerModel();
 
+    private List<WorkerPayManager.Models.Workers.Worker> _workers { get; set; }
     protected override void OnInitialized()
+
     {
 
         UpdateWorkers();
@@ -63,6 +67,19 @@
     {
         _workers = await workerService.GetWorkersAsync();
         StateHasChanged();
+    }
+
+    private void PrepareForEdit(int id)
+    {
+        WorkerPayManager.Models.Workers.Worker worker = _workers.SingleOrDefault(x => x.Id == id);
+        if(worker != null)
+        {
+            _editWorkerModel.Id = worker.Id;
+            _editWorkerModel.FirstName = worker.FirstName;
+            _editWorkerModel.LastName = worker.LastName;
+            _editWorkerModel.IdentificationNumber = worker.IdentificationNumber;
+            _editWorkerModel.BirthDate = worker.DateOfBirth;
+        }
     }
 
 }
