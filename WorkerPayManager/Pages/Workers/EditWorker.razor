@@ -78,49 +78,19 @@
         await jsRuntime.InvokeAsync<object>("CloseModal", "editWorkerModal");
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await createFormModel();
-    }
-
-    protected override async Task OnParametersSetAsync()
-    {
-        await createFormModel();
-    }
-
-    private async Task createFormModel()
-    {
-        List<CustomWorkerField> customWorkerFields = await workerService.GetCustomWorkerFieldsAsync();
-
-        EditWorkerModel.CustomFieldValues = new List<IAddWorkerCustomFieldModel>();
-
-        foreach (var item in customWorkerFields)
-        {
-            if (item.IsRequired)
-            {
-                EditWorkerModel.CustomFieldValues.Add(new AddWorkerCustomFieldRequiredModel(item.Id, item.Name, item.IsRequired));
-            }
-            else
-            {
-                EditWorkerModel.CustomFieldValues.Add(new AddWorkerCustomFieldModel(item.Id, item.Name, item.IsRequired));
-            }
-        }
-    }
-
     private async void HandleValidSubmit()
     {
-        //(bool, string) result = await workerService.AddWorkerAsync(_editWorkerModel);
+        (bool, string) result = await workerService.EditWorkerAsync(EditWorkerModel);
 
-        //if (!result.Item1)
-        //{
-        //    _resultMessage = result.Item2;
-        //}
-        //else
-        //{
-        //    await CloseTaskModal();
-        //    await createFormModel();
-        //    DataChanged?.Invoke();
-        //}
+        if (!result.Item1)
+        {
+            _resultMessage = result.Item2;
+        }
+        else
+        {
+            await CloseTaskModal();
+            DataChanged?.Invoke();
+        }
 
     }
 

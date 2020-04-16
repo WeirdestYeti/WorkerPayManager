@@ -13,11 +13,16 @@ namespace WorkerPayManager.Models.Workers
         [Required(ErrorMessage = "Custom Field Required.")]
         public string Value { get; set; }      
         public bool IsRequired { get; set; }
-        public AddWorkerCustomFieldRequiredModel(int fieldId, string name, bool isRequired)
+        public AddWorkerCustomFieldRequiredModel(int fieldId, string name, bool isRequired, string value = "")
         {
             FieldId = fieldId;
             Name = name;
             IsRequired = isRequired;
+        }
+
+        public AddWorkerCustomFieldRequiredModel()
+        {
+
         }
     }
 
@@ -27,7 +32,7 @@ namespace WorkerPayManager.Models.Workers
         public string Name { get; set; }
         public string Value { get; set; }
         public bool IsRequired { get; set; }
-        public AddWorkerCustomFieldModel(int fieldId, string name, bool isRequired)
+        public AddWorkerCustomFieldModel(int fieldId, string name, bool isRequired, string value = "")
         {
             FieldId = fieldId;
             Name = name;

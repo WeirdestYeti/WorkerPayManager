@@ -9,9 +9,9 @@
 
 <h3>Workers</h3>
 
-<AddWorker DataChanged="UpdateWorkers" />
+<AddWorker DataChanged="updateWorkersAsync" />
 
-<EditWorker DataChanged="UpdateWorkers" EditWorkerModel="_editWorkerModel" />
+<EditWorker DataChanged="updateWorkersAsync" EditWorkerModel="_editWorkerModel" />
 
 <a class="nav-link" href="" data-toggle="modal" data-target="#addWorkerModal">
     <span class="oi oi-plus" aria-hidden="true"></span> Add A Worker
@@ -32,7 +32,7 @@
                     Action
                 </button>
                 <div class="dropdown-menu">
-                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#editWorkerModal" @onclick="(() => PrepareForEdit(context.Id))">Edit</a>
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#editWorkerModal" @onclick="(() => prepareForEdit(context.Id))">Edit</a>
                     <div class="dropdown-divider"></div>
                     <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteWorkerModal">Remove</a>
                 </div>
@@ -48,11 +48,11 @@
     private EditWorkerModel _editWorkerModel = new EditWorkerModel();
 
     private List<WorkerPayManager.Models.Workers.Worker> _workers { get; set; }
-    protected override void OnInitialized()
 
+    protected override void OnInitialized()
     {
 
-        UpdateWorkers();
+        updateWorkersAsync();
 
         _propertiesList = new List<(Func<dynamic, IComparable>, string)>();
         _propertiesList.Add((x => x.FirstName, "First Name"));
@@ -61,25 +61,64 @@
         _propertiesList.Add((x => x.DateOfBirth, "Date Of Birth"));
         _propertiesList.Add((x => x.CreationDate, "Date Created"));
         _propertiesList.Add((null, "Action"));
+
+        createCustomWorkerFieldsFormAsync();
+
     }
 
-    private async void UpdateWorkers()
+    private async void updateWorkersAsync()
     {
         _workers = await workerService.GetWorkersAsync();
         StateHasChanged();
     }
 
-    private void PrepareForEdit(int id)
+    private async void prepareForEdit(int id)
     {
         WorkerPayManager.Models.Workers.Worker worker = _workers.SingleOrDefault(x => x.Id == id);
         if(worker != null)
         {
+            _editWorkerModel = new EditWorkerModel();
+            createCustomWorkerFieldsFormAsync();
+
             _editWorkerModel.Id = worker.Id;
             _editWorkerModel.FirstName = worker.FirstName;
             _editWorkerModel.LastName = worker.LastName;
             _editWorkerModel.IdentificationNumber = worker.IdentificationNumber;
             _editWorkerModel.BirthDate = worker.DateOfBirth;
+
+            List<CustomWorkerFieldValue> customWorkerFieldValues = await workerService.GetCustomFieldValuesByWorkerId(worker.Id);
+
+            for (int i = 0; i < _editWorkerModel.CustomFieldValues.Count; i++)
+            {
+                for (int j = 0; j < customWorkerFieldValues.Count; j++)
+                {
+                    if (_editWorkerModel.CustomFieldValues[i].FieldId == customWorkerFieldValues[j].CustomWorkerField.Id)
+                    {
+                        _editWorkerModel.CustomFieldValues[i].Value = customWorkerFieldValues[j].Value;
+                    }
+                }
+            }
         }
+    }
+
+    private async void createCustomWorkerFieldsFormAsync()
+    {
+        List<CustomWorkerField> customWorkerFields = await workerService.GetCustomWorkerFieldsAsync();
+
+        _editWorkerModel.CustomFieldValues = new List<IAddWorkerCustomFieldModel>();
+
+        foreach (var item in customWorkerFields)
+        {
+            if (item.IsRequired)
+            {
+                _editWorkerModel.CustomFieldValues.Add(new AddWorkerCustomFieldRequiredModel(item.Id, item.Name, item.IsRequired));
+            }
+            else
+            {
+                _editWorkerModel.CustomFieldValues.Add(new AddWorkerCustomFieldModel(item.Id, item.Name, item.IsRequired));
+            }
+        }
+
     }
 
 }

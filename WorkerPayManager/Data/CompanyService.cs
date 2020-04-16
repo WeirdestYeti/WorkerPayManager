@@ -55,7 +55,7 @@ namespace WorkerPayManager.Data
             {
                 Company companyToUpdate = await _context.Companies.SingleOrDefaultAsync(x => x.Id == changeCompanyPasswordModel.Id);
 
-                if (changeCompanyPasswordModel.Id == companyToUpdate.Id)
+                if (companyToUpdate != null)
                 {
                     if (companyToUpdate.Password.Equals(changeCompanyPasswordModel.OldPassword))
                     {

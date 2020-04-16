@@ -43,7 +43,7 @@ namespace WorkerPayManager.Data
         {
             if (_globalVariable.IsCompanySelected)
             {
-                if(await CustomWorkerFieldExistsForCompanyAsync(_globalVariable.SelectedCompanyId, name))
+                if(await customWorkerFieldExistsForCompanyAsync(_globalVariable.SelectedCompanyId, name))
                 {
                     return (false, "Field already exists.");
                 }
@@ -67,7 +67,7 @@ namespace WorkerPayManager.Data
                 CustomWorkerField customWorkerField = await _context.CustomWorkerFields.SingleOrDefaultAsync(x => x.Id == editCustomWorkerFieldModel.Id);
                 if (customWorkerField != null)
                 {
-                    if (await CustomWorkerFieldExistsForCompanyAsync(_globalVariable.SelectedCompanyId, editCustomWorkerFieldModel.Name) && !editCustomWorkerFieldModel.Name.Equals(customWorkerField.Name))
+                    if (await customWorkerFieldExistsForCompanyAsync(_globalVariable.SelectedCompanyId, editCustomWorkerFieldModel.Name) && !editCustomWorkerFieldModel.Name.Equals(customWorkerField.Name))
                     {
                         return (false, "Field already exists.");
                     }
@@ -133,6 +133,39 @@ namespace WorkerPayManager.Data
             else return (false, "Company not selected.");
         }
         
+        public async Task<(bool, string)> EditWorkerAsync(EditWorkerModel editWorkerModel)
+        {
+            if (_globalVariable.IsCompanySelected)
+            {
+                Worker worker = await _context.Workers.SingleOrDefaultAsync(x => x.Id == editWorkerModel.Id);
+
+                if (worker != null)
+                {
+                    worker.IdentificationNumber = editWorkerModel.IdentificationNumber;
+                    worker.FirstName = editWorkerModel.FirstName;
+                    worker.DateOfBirth = editWorkerModel.BirthDate;
+
+                    _context.Workers.Update(worker);
+
+                    for (int i = 0; i < editWorkerModel.CustomFieldValues.Count; i++)
+                    {
+                        CustomWorkerFieldValue customWorkerFieldValue = _context.CustomWorkerFieldValues.SingleOrDefault(x => x.CustomWorkerField.Id == editWorkerModel.CustomFieldValues[i].FieldId && x.Worker.Id == worker.Id);
+                        
+                        if(customWorkerFieldValue != null)
+                        {
+                            customWorkerFieldValue.Value = editWorkerModel.CustomFieldValues[i].Value;
+                            _context.Update(customWorkerFieldValue);
+                        }
+                    }
+                    await _context.SaveChangesAsync();
+
+                    return (true, "Updated");
+                }
+                else return (false, "Id's don't match.");
+            }
+            else return (false, "Company not selected.");
+        }
+
         public async Task<List<Worker>> GetWorkersAsync()
         {
             if (_globalVariable.IsCompanySelected)
@@ -142,11 +175,21 @@ namespace WorkerPayManager.Data
             else return new List<Worker>();
         }
 
+        public async Task<List<CustomWorkerFieldValue>> GetCustomFieldValuesByWorkerId(int workerId)
+        {
+            if (_globalVariable.IsCompanySelected)
+            {
+                return await _context.CustomWorkerFieldValues.Where(x => x.Worker.Id == workerId).ToListAsync();
+            }
+            else return new List<CustomWorkerFieldValue>();
+        }
+
+
 
 
         #region Private Methods
 
-        private async Task<bool> CustomWorkerFieldExistsForCompanyAsync(int companyId, string fieldName)
+        private async Task<bool> customWorkerFieldExistsForCompanyAsync(int companyId, string fieldName)
         {
             if (companyId != 0)
             {
