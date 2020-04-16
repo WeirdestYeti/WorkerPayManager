@@ -156,6 +156,15 @@ namespace WorkerPayManager.Data
                             customWorkerFieldValue.Value = editWorkerModel.CustomFieldValues[i].Value;
                             _context.Update(customWorkerFieldValue);
                         }
+                        else
+                        {
+                            CustomWorkerField customWorkerField = await GetCustomWorkerFieldByIdAsync(editWorkerModel.CustomFieldValues[i].FieldId);
+
+                            customWorkerFieldValue = new CustomWorkerFieldValue(customWorkerField, worker, editWorkerModel.CustomFieldValues[i].Value);
+
+                            _context.CustomWorkerFieldValues.Add(customWorkerFieldValue);
+                            await _context.SaveChangesAsync();
+                        }
                     }
                     await _context.SaveChangesAsync();
 
