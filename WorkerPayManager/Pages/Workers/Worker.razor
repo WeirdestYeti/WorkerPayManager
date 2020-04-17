@@ -9,6 +9,8 @@
 
 <h3>Workers</h3>
 
+<DeleteWorker DataChanged="updateWorkersAsync" Worker="_workerToDelete" />
+
 <AddWorker DataChanged="updateWorkersAsync" />
 
 <EditWorker DataChanged="updateWorkersAsync" EditWorkerModel="_editWorkerModel" />
@@ -34,7 +36,7 @@
                 <div class="dropdown-menu">
                     <a class="dropdown-item" href="#" data-toggle="modal" data-target="#editWorkerModal" @onclick="(() => prepareForEdit(context.Id))">Edit</a>
                     <div class="dropdown-divider"></div>
-                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteWorkerModal">Remove</a>
+                    <a class="dropdown-item text-danger" href="#" data-toggle="modal" data-target="#deleteWorkerModal" @onclick="(() => prepareForDelete(context))">Delete</a>
                 </div>
             </div>
         </td>
@@ -49,8 +51,11 @@
 
     private List<WorkerPayManager.Models.Workers.Worker> _workers { get; set; }
 
+    private WorkerPayManager.Models.Workers.Worker _workerToDelete { get; set; }
+
     protected override void OnInitialized()
     {
+        _workerToDelete = new Models.Workers.Worker();
 
         updateWorkersAsync();
 
@@ -99,6 +104,11 @@
                 }
             }
         }
+    }
+
+    private void prepareForDelete(WorkerPayManager.Models.Workers.Worker worker)
+    {
+        _workerToDelete = worker;
     }
 
     private async void createCustomWorkerFieldsFormAsync()

@@ -1,0 +1,113 @@
+﻿@using WorkerPayManager.Data
+@using WorkerPayManager.Models.Workers
+
+@inject IJSRuntime jsRuntime
+@inject WorkerPayManager.Data.WorkerService workerService
+
+<div class="modal fade" tabindex="-1" role="dialog" id="deleteWorkerModal">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Worker</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <dl class="row">
+                    <dt class="col-sm-6">Identification Number:</dt>
+                    <dd class="col-sm-6">@Worker.IdentificationNumber</dd>
+
+                    <dt class="col-sm-6">Name:</dt>
+                    <dd class="col-sm-6">@Worker.FirstName</dd>
+
+                    <dt class="col-sm-6">Last Name:</dt>
+                    <dd class="col-sm-6">@Worker.LastName</dd>
+
+
+                    <dt class="col-sm-6">Date Of Birth:</dt>
+                    <dd class="col-sm-6">@Worker.DateOfBirth.ToString("dd/MM/yyyy")</dd>
+
+                    <dt class="col-sm-6">Created:</dt>
+                    <dd class="col-sm-6">@Worker.CreationDate.ToString("dd/MM/yyyy hh:mm:ss")</dd>
+                </dl>
+
+                <h5 class="text-danger">Fill below to delete:</h5>
+                <EditForm Model="_deleteWorkerModel" OnValidSubmit="HandleValidSubmit">
+                    <div class="alert alert-danger" role="alert">
+                        <b>Warning!</b> This process is permanent.
+                    </div>
+
+                    <DataAnnotationsValidator />
+                    <ValidationSummary />
+
+                    @if (_resultMessage != null)
+                    {
+                        <ul class="validation-errors">
+                            <li class="validation-message">@_resultMessage</li>
+                        </ul>
+                    }
+
+                    <div class="form-group">
+                        <label for="lastName">Last Name*</label>
+                        <InputText id="lastName" class="form-control" @bind-Value="_deleteWorkerModel.LastName"></InputText>
+                    </div>
+                    <div class="form-group">
+                        <label for="lastName">Company Password*</label>
+                        <InputText id="password" type="password" class="form-control" @bind-Value="_deleteWorkerModel.Password"></InputText>
+                    </div>
+
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+</div>
+
+@code {
+
+    private string _resultMessage { get; set; }
+
+    private DeleteWorkerModel _deleteWorkerModel { get; set; }
+
+    [Parameter]
+    public WorkerPayManager.Models.Workers.Worker Worker { get; set; }
+
+    [Parameter]
+    public Action DataChanged { get; set; }
+
+    protected override void OnInitialized()
+    {
+        _resultMessage = null;
+    }
+
+    protected override void OnParametersSet()
+    {
+        _resultMessage = null;
+        _deleteWorkerModel = new DeleteWorkerModel();
+        _deleteWorkerModel.Id = Worker.Id;
+    }
+
+    private async Task CloseTaskModal()
+    {
+        await jsRuntime.InvokeAsync<object>("CloseModal", "deleteWorkerModal");
+    }
+
+    private async void HandleValidSubmit()
+    {
+        (bool, string) result = await workerService.DeleteWorkerAsync(_deleteWorkerModel);
+
+        if (!result.Item1)
+        {
+            _resultMessage = result.Item2;
+        }
+        else
+        {
+            await CloseTaskModal();
+            DataChanged?.Invoke();
+        }
+
+    }
+
+}

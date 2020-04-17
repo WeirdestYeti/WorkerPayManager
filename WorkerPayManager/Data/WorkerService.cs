@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using WorkerPayManager.Models.Companies;
 using WorkerPayManager.Models.Workers;
 
 namespace WorkerPayManager.Data
@@ -90,9 +91,11 @@ namespace WorkerPayManager.Data
                 CustomWorkerField customWorkerField = await _context.CustomWorkerFields.SingleOrDefaultAsync(x => x.Id == id);
                 if (customWorkerField != null)
                 {
-                    _context.CustomWorkerFieldValues.FromSqlRaw("DELETE FROM CustomWorkerFieldValues WHERE CustomWorkerFieldId = @id", customWorkerField.Id);
+                    _context.CustomWorkerFieldValues.RemoveRange(_context.CustomWorkerFieldValues.Where(x => x.CustomWorkerField.Id == customWorkerField.Id));
+
                     _context.CustomWorkerFields.Remove(customWorkerField);
                     await _context.SaveChangesAsync();
+
                     return (true, "Removed");
                 }
                 else return (false, "Id not found.");
@@ -171,6 +174,37 @@ namespace WorkerPayManager.Data
                     return (true, "Updated");
                 }
                 else return (false, "Id's don't match.");
+            }
+            else return (false, "Company not selected.");
+        }
+
+        public async Task<(bool, string)> DeleteWorkerAsync(DeleteWorkerModel deleteWorkerModel)
+        {
+            if (_globalVariable.IsCompanySelected)
+            {
+                Worker worker = await _context.Workers.SingleOrDefaultAsync(x => x.Id == deleteWorkerModel.Id);
+
+                if (worker != null)
+                {
+                    Company company = await _companyService.GetSelectedCompanyAsync();
+
+                    if (company.Password.Equals(deleteWorkerModel.Password))
+                    {
+                        if (worker.LastName.Equals(deleteWorkerModel.LastName))
+                        {
+                            // remove custom field values
+                            _context.CustomWorkerFieldValues.RemoveRange(_context.CustomWorkerFieldValues.Where(x => x.Worker.Id == worker.Id));
+
+                            // at the end remove the worker
+                            _context.Remove(worker);
+                            await _context.SaveChangesAsync();
+                            return (true, "Deleted");
+                        }
+                        else return (false, "Last name doesn't match.");
+                    }
+                    else return (false, "Wrong password.");
+                }
+                else return (false, "Worker not found.");
             }
             else return (false, "Company not selected.");
         }
